@@ -14,7 +14,7 @@ export default function NosotrosPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-bg.jpg')",
+            backgroundImage: "url('/images/nosotros-hero.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />

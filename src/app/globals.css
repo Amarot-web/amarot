@@ -104,6 +104,19 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* Service card backgrounds */
+.service-card-red {
+  background-color: #DC2626 !important;
+}
+
+.service-card-dark {
+  background-color: #0f172a !important;
+}
+
+.service-card-white {
+  background-color: #ffffff !important;
+}
+
 /* Navigation active state */
 .nav-link {
   position: relative;
@@ -166,6 +179,25 @@ html {
 .stagger-2 { animation-delay: 0.2s; }
 .stagger-3 { animation-delay: 0.3s; }
 .stagger-4 { animation-delay: 0.4s; }
+
+/* Clients carousel animation */
+@keyframes scrollClients {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.clients-carousel {
+  animation: scrollClients 20s linear infinite;
+  width: max-content;
+}
+
+.clients-carousel:hover {
+  animation-play-state: paused;
+}
 
 /* Product carousel */
 .product-slider {

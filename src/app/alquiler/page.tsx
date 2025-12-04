@@ -11,7 +11,7 @@ const productCategories = [
     title: "ALQUILER DE DIAMANTINAS HILTI",
     subtitle: "AMAROTPERÚ",
     products: [],
-    image: null,
+    image: "/images/products/diamantina.jpg",
   },
   {
     title: "ALQUILER DE ROTOMARTILLOS HILTI",
@@ -27,14 +27,14 @@ const productCategories = [
     title: "ALQUILER DE TALADROS HILTI",
     subtitle: "AMAROTPERÚ",
     products: [],
-    image: null,
+    image: "/images/products/taladro-t30.webp",
   },
   {
     title: "ALQUILER DE DETECTORES DE METAL HILTI",
     subtitle: "AMAROTPERÚ",
     description: "PS 30/ PS 50/ PS 200/ PS 1000",
     products: [],
-    image: null,
+    image: "/images/products/detector-ps200.gif",
   },
 ];
 
@@ -46,7 +46,7 @@ export default function AlquilerPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-bg.jpg')",
+            backgroundImage: "url('/images/alquiler-hero.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />
@@ -100,7 +100,7 @@ export default function AlquilerPage() {
                   </div>
                 ) : category.image ? (
                   <div className="flex justify-center md:justify-start">
-                    <div className="w-64 h-48">
+                    <div className="w-full max-w-md h-72 md:h-96">
                       <div
                         className="w-full h-full bg-contain bg-center bg-no-repeat"
                         style={{

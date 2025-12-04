@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SquaresPattern from "@/components/SquaresPattern";
+import HeroCarousel from "@/components/HeroCarousel";
 
 const services = [
   {
@@ -37,29 +38,8 @@ const clients = [
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative h-[600px] md:h-[700px] bg-gray-900">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url('/images/hero-bg.jpg')",
-          }}
-        />
-        <div className="absolute inset-0 hero-overlay" />
-
-        {/* Content */}
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-          <div className="max-w-2xl animate-fade-in-up">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              Especializados en perforación diamantina y aplicación de anclajes químicos
-            </h1>
-            <Link href="/contacto" className="btn-primary inline-block">
-              Descargar Brochure
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* About Section */}
       <section className="py-16 md:py-24">
@@ -101,56 +81,84 @@ export default function Home() {
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => (
-              <div
-                key={service.title}
-                className={`service-card bg-white rounded-lg overflow-hidden shadow-lg ${
-                  index === 0 ? 'bg-[#DC2626] text-white' : ''
-                }`}
-              >
-                <div className="h-48 relative">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('${service.image}')`,
-                    }}
-                  />
-                  {index !== 0 && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  )}
+            {services.map((service, index) => {
+              // Patrón de colores: rojo-negro-rojo-negro (como en el sitio original)
+              const isRed = index === 0 || index === 2;
+              const isDark = index === 1 || index === 3;
+
+              const bgClass = isRed ? 'service-card-red' : 'service-card-dark';
+              const textClass = 'text-white';
+              const descClass = 'text-white/90';
+
+              return (
+                <div
+                  key={service.title}
+                  className={`service-card rounded-lg overflow-hidden shadow-lg ${bgClass}`}
+                >
+                  <div className="h-48 relative">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url('${service.image}')`,
+                      }}
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className={`font-bold text-lg mb-3 ${textClass}`}>
+                      {service.title}
+                    </h3>
+                    <p className={`text-sm leading-relaxed ${descClass}`}>
+                      {service.description}
+                    </p>
+                  </div>
                 </div>
-                <div className={`p-6 ${index === 0 ? 'bg-[#DC2626]' : ''}`}>
-                  <h3 className={`font-bold text-lg mb-3 ${index === 0 ? 'text-white' : 'text-[#1E3A8A]'}`}>
-                    {service.title}
-                  </h3>
-                  <p className={`text-sm leading-relaxed ${index === 0 ? 'text-white/90' : 'text-gray-600'}`}>
-                    {service.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Clients Section */}
-      <section className="py-16 border-t border-b">
+      <section className="py-16 border-t border-b overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-            {clients.map((client) => (
-              <div
-                key={client.name}
-                className="grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
-              >
-                <div className="h-16 w-28 flex items-center justify-center">
-                  <img
-                    src={client.logo}
-                    alt={client.name}
-                    className="max-h-full max-w-full object-contain"
-                  />
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#1E3A8A] mb-12">
+            CONFÍAN EN NOSOTROS
+          </h2>
+
+          {/* Carousel container */}
+          <div className="relative">
+            <div className="clients-carousel flex items-center gap-12">
+              {/* First set of logos */}
+              {clients.map((client) => (
+                <div
+                  key={client.name}
+                  className="flex-shrink-0"
+                >
+                  <div className="h-16 w-32 flex items-center justify-center">
+                    <img
+                      src={client.logo}
+                      alt={client.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+              {/* Duplicate for seamless loop */}
+              {clients.map((client) => (
+                <div
+                  key={`${client.name}-duplicate`}
+                  className="flex-shrink-0"
+                >
+                  <div className="h-16 w-32 flex items-center justify-center">
+                    <img
+                      src={client.logo}
+                      alt={client.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

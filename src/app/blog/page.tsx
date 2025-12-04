@@ -20,17 +20,18 @@ export default function BlogPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-[300px] md:h-[400px] bg-gray-900">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url('/images/hero-bg.jpg')",
-          }}
-        />
-        <div className="absolute inset-0 page-header-overlay" />
+      <section
+        className="relative h-[300px] md:h-[400px]"
+        style={{
+          backgroundColor: '#F0F4FA',
+          backgroundImage: "url('/images/squares15.png')",
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center">
-            BLOG
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1E3A8A] text-center">
+            Blog
           </h1>
         </div>
       </section>
