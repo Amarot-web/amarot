@@ -26,7 +26,7 @@ export default function ContactoPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-contacto.svg')",
+            backgroundImage: "url('/images/hero-bg.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />

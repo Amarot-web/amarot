@@ -14,7 +14,7 @@ export default function NosotrosPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-nosotros.svg')",
+            backgroundImage: "url('/images/hero-bg.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />
@@ -38,7 +38,7 @@ export default function NosotrosPage() {
               <div
                 className="absolute inset-0 bg-cover bg-center rounded-lg"
                 style={{
-                  backgroundImage: "url('/images/about-full.svg')",
+                  backgroundImage: "url('/images/about.jpg')",
                 }}
               />
             </div>

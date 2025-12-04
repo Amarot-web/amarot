@@ -22,20 +22,12 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-[#DC2626] flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
-              </div>
-              <div className="ml-2">
-                <span className="text-2xl font-bold text-[#DC2626] tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  AMAROT
-                </span>
-                <p className="text-[8px] text-gray-500 tracking-widest uppercase -mt-1">
-                  Para proyectos exigentes
-                </p>
-              </div>
-            </div>
+          <Link href="/" className="flex items-center">
+            <img
+              src="/images/logo.png"
+              alt="AMAROT Perú"
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

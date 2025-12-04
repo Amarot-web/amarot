@@ -17,24 +17,24 @@ const productCategories = [
     title: "ALQUILER DE ROTOMARTILLOS HILTI",
     subtitle: "AMAROTPERÚ",
     products: [
-      { name: "TE 1000", image: "/images/products/te-1000.svg" },
-      { name: "TE 70", image: "/images/products/te-70.svg" },
-      { name: "TE 50", image: "/images/products/te-50.svg" },
-      { name: "TE 30", image: "/images/products/te-30.svg" },
+      { name: "TE 1000", image: "/images/products/te-1000.jpg" },
+      { name: "TE 70", image: "/images/products/te-70.webp" },
+      { name: "TE 50", image: "/images/products/te-50.webp" },
+      { name: "TE 30", image: "/images/products/te-30.webp" },
     ],
   },
   {
     title: "ALQUILER DE TALADROS HILTI",
     subtitle: "AMAROTPERÚ",
     products: [],
-    image: "/images/products/taladro.svg",
+    image: null,
   },
   {
     title: "ALQUILER DE DETECTORES DE METAL HILTI",
     subtitle: "AMAROTPERÚ",
     description: "PS 30/ PS 50/ PS 200/ PS 1000",
     products: [],
-    image: "/images/products/detector.svg",
+    image: null,
   },
 ];
 
@@ -46,7 +46,7 @@ export default function AlquilerPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-alquiler.svg')",
+            backgroundImage: "url('/images/hero-bg.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />

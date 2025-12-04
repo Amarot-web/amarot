@@ -23,18 +23,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div>
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-[#DC2626] flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-[#DC2626] tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  AMAROT
-                </span>
-                <p className="text-[8px] text-gray-500 tracking-widest uppercase -mt-1">
-                  Para proyectos exigentes
-                </p>
-              </div>
+            <Link href="/" className="block mb-4">
+              <img
+                src="/images/logo.png"
+                alt="AMAROT Perú"
+                className="h-10 w-auto"
+              />
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed">
               Somos una empresa peruana especializada en servicios de perforación diamantina y aplicación de anclajes químicos para la construcción

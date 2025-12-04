@@ -5,33 +5,33 @@ const services = [
   {
     title: "Perforación Diamantina",
     description: "Nos especializamos en perforaciones diamantinas de todos los diámetros y profundidades posibles usando equipos Hilti de las más alta calidad, perforamos muros, losas y vigas de cualquier grosor.",
-    image: "/images/perforacion-diamantina.svg",
+    image: "/images/perforacion-diamantina.jpg",
   },
   {
     title: "Aplicación de Sellos Cortafuegos",
     description: "Sellamos juntas de drywall, ductos de ventilación, bandejas de cableado y más utilizando químicos cortafuego Hilti o la marca de la preferencia del cliente.",
-    image: "/images/sellos-cortafuegos.svg",
+    image: "/images/sellos-cortafuegos.jpg",
   },
   {
     title: "Aplicación de Anclajes Químicos",
     description: "Perforación y aplicación de adhesivos químicos para la fijación de fierros de construcción o varillas roscadas para la instalación de diferentes estructuras.",
-    image: "/images/anclajes-quimicos.svg",
+    image: "/images/anclajes-quimicos.png",
   },
   {
     title: "Servicios de Detección de Metales",
     description: "Escaneo de superficies con detectores de metales Hilti PS 30/ PS 50/ PS 200/ PS 1000 para la detección de fierros cables o tuberías.",
-    image: "/images/deteccion-metales.svg",
+    image: "/images/deteccion-metales.webp",
   },
 ];
 
 const clients = [
-  { name: "Grupo T&C", logo: "/images/clients/tyc.svg" },
-  { name: "Mondelez", logo: "/images/clients/mondelez.svg" },
-  { name: "Abril", logo: "/images/clients/abril.svg" },
-  { name: "INCOT", logo: "/images/clients/incot.svg" },
-  { name: "FLAT", logo: "/images/clients/flat.svg" },
-  { name: "Direnzzo", logo: "/images/clients/direnzzo.svg" },
-  { name: "V&V Bravo", logo: "/images/clients/vvbravo.svg" },
+  { name: "Grupo T&C", logo: "/images/clients/tyc.png" },
+  { name: "Mondelez", logo: "/images/clients/mondelez.jpg" },
+  { name: "Abril", logo: "/images/clients/abril.jpg" },
+  { name: "INCOT", logo: "/images/clients/incot.png" },
+  { name: "FLAT", logo: "/images/clients/flat.png" },
+  { name: "Direnzzo", logo: "/images/clients/direnzzo.png" },
+  { name: "V&V Bravo", logo: "/images/clients/vvbravo.jpg" },
 ];
 
 export default function Home() {
@@ -43,7 +43,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-bg.svg')",
+            backgroundImage: "url('/images/hero-bg.jpg')",
           }}
         />
         <div className="absolute inset-0 hero-overlay" />
@@ -73,7 +73,7 @@ export default function Home() {
               <div
                 className="absolute inset-0 bg-cover bg-center rounded-lg"
                 style={{
-                  backgroundImage: "url('/images/about.svg')",
+                  backgroundImage: "url('/images/about.jpg')",
                 }}
               />
             </div>
@@ -142,8 +142,12 @@ export default function Home() {
                 key={client.name}
                 className="grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
               >
-                <div className="h-12 w-24 flex items-center justify-center">
-                  <span className="text-gray-400 font-semibold text-sm">{client.name}</span>
+                <div className="h-16 w-28 flex items-center justify-center">
+                  <img
+                    src={client.logo}
+                    alt={client.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
                 </div>
               </div>
             ))}

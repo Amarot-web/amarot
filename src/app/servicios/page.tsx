@@ -11,25 +11,25 @@ const services = [
   {
     title: "Perforación Diamantina",
     description: "Nos especializamos en perforaciones diamantinas de todos los diámetros y profundidades posibles usando equipos Hilti de las más alta calidad. Podemos perforar: Muros, losas y vigas de cualquier grosor y reforzadas con fierro.",
-    image: "/images/perforacion-diamantina.svg",
+    image: "/images/servicio-perforacion.jpg",
     reverse: false,
   },
   {
     title: "Aplicación de Sellos Cortafuegos",
     description: "Sellamos juntas de drywall, ductos de ventilación, bandejas de cableado y más utilizando químicos cortafuego Hilti o la marca de la preferencia del cliente.",
-    image: "/images/sellos-cortafuegos.svg",
+    image: "/images/servicio-sellos.jpg",
     reverse: true,
   },
   {
     title: "Aplicación de Anclajes Químicos",
     description: "Perforación y aplicación de adhesivos químicos para la fijación de fierros de construcción o varillas roscadas para la instalación de diferentes estructuras.",
-    image: "/images/anclajes-quimicos.svg",
+    image: "/images/servicio-anclajes.jpg",
     reverse: false,
   },
   {
     title: "Servicios de Detección de Metales",
     description: "Escaneo de superficies con detectores de metales Hilti PS 30/ PS 50/ PS 200/ PS 1000 para la detección de fierros cables o tuberías.",
-    image: "/images/deteccion-metales.svg",
+    image: "/images/servicio-deteccion.jpg",
     reverse: true,
   },
 ];
@@ -42,7 +42,7 @@ export default function ServiciosPage() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/images/hero-servicios.svg')",
+            backgroundImage: "url('/images/hero-bg.jpg')",
           }}
         />
         <div className="absolute inset-0 page-header-overlay" />
