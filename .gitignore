@@ -38,6 +38,13 @@ yarn-error.log*
 
 # documentación interna
 /docs
+Antecedentes.md
+Claude.md
+planSEO.md
+
+# archivos de análisis
+*.xlsx
+*.html
 
 # typescript
 *.tsbuildinfo
