@@ -261,6 +261,94 @@ export function calculateEquipmentCost(
   return quantity * dailyRate * daysUsed;
 }
 
+// ==================== FUNCIONES PARA EL STORE ====================
+
+/**
+ * Calcula el precio total de un item (usado por el store)
+ */
+export function calculateItemPrice(
+  unitPrice: number,
+  quantity: number,
+  workingHeight: number = 0,
+  diameter: number = 0
+): number {
+  const heightFactor = getHeightFactor(workingHeight);
+  const volumeDiscount = getVolumeDiscount(quantity);
+  return unitPrice * quantity * heightFactor * (1 - volumeDiscount);
+}
+
+/**
+ * Calcula todos los totales (alias para calculateQuotationTotals con nombres más simples)
+ */
+export function calculateTotals(
+  items: QuotationItem[],
+  laborCosts: LaborCost[],
+  logisticsCosts: LogisticsCost[],
+  materialCosts: MaterialCost[],
+  equipmentCosts: EquipmentCost[],
+  marginPercentage: number
+): {
+  itemsTotal: number;
+  laborTotal: number;
+  logisticsTotal: number;
+  materialsTotal: number;
+  equipmentTotal: number;
+  costTotal: number;
+  marginAmount: number;
+  subtotal: number;
+  igv: number;
+  total: number;
+} {
+  const totals = calculateQuotationTotals(
+    items,
+    laborCosts,
+    logisticsCosts,
+    materialCosts,
+    equipmentCosts,
+    marginPercentage
+  );
+
+  return {
+    itemsTotal: totals.itemsSubtotal,
+    laborTotal: totals.laborSubtotal,
+    logisticsTotal: totals.logisticsSubtotal,
+    materialsTotal: totals.materialsSubtotal,
+    equipmentTotal: totals.equipmentSubtotal,
+    costTotal: totals.costTotal,
+    marginAmount: totals.marginAmount,
+    subtotal: totals.subtotal,
+    igv: totals.igv,
+    total: totals.total,
+  };
+}
+
+/**
+ * Calcula las brocas requeridas agrupadas por diámetro
+ */
+export function calculateRequiredDrillBits(
+  items: QuotationItem[]
+): Record<number, number> {
+  const perforationItems = items.filter(
+    (item) => item.serviceType === 'perforation' && item.diameter
+  );
+
+  const bitsPerDiameter: Record<number, number> = {};
+
+  for (const item of perforationItems) {
+    const diameter = item.diameter!;
+    const perforations = item.quantity;
+    const bitsNeeded = calculateDrillBitsNeeded(perforations, diameter);
+
+    if (bitsPerDiameter[diameter]) {
+      bitsPerDiameter[diameter] += bitsNeeded;
+    } else {
+      bitsPerDiameter[diameter] = bitsNeeded;
+    }
+  }
+
+  return bitsPerDiameter;
+}
+
 // ==================== FUNCIONES DE FORMATO ====================
 
 /**

@@ -84,7 +84,7 @@ export default function StepCosts() {
     description: '',
     quantity: 1,
     unitCost: 0,
-    perforationsPerUnit: undefined,
+    perforationsPerUnit: null,
   });
 
   const [newEquipment, setNewEquipment] = useState<Omit<EquipmentCost, 'id' | 'quotationId' | 'totalCost'>>({

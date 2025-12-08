@@ -373,3 +373,123 @@ export function clientToDbClient(client: Omit<Client, 'id' | 'createdAt' | 'upda
     address: client.address,
   };
 }
+
+// Alias para compatibilidad
+export const dbToClient = dbClientToClient;
+export const clientToDb = clientToDbClient;
+
+// Conversión de QuotationItem
+export function quotationItemToDb(item: QuotationItem): Omit<DbQuotationItem, 'id'> {
+  return {
+    quotation_id: item.quotationId,
+    sequence: item.sequence,
+    display_type: item.displayType,
+    service_type: item.serviceType,
+    description: item.description,
+    diameter: item.diameter,
+    depth: item.depth,
+    working_height: item.workingHeight,
+    quantity: item.quantity,
+    unit: item.unit,
+    unit_price: item.unitPrice,
+    total_price: item.totalPrice,
+  };
+}
+
+// Tipos DB para costos
+export interface DbLaborCost {
+  id: string;
+  quotation_id: string;
+  role: WorkerRole;
+  description: string;
+  quantity: number;
+  daily_rate: number;
+  days_worked: number;
+  total_cost: number;
+  include_benefits: boolean;
+  benefits_percentage: number | null;
+}
+
+export interface DbLogisticsCost {
+  id: string;
+  quotation_id: string;
+  type: LogisticsType;
+  description: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+}
+
+export interface DbMaterialCost {
+  id: string;
+  quotation_id: string;
+  type: MaterialType;
+  description: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  perforations_per_unit: number | null;
+}
+
+export interface DbEquipmentCost {
+  id: string;
+  quotation_id: string;
+  type: EquipmentType;
+  description: string;
+  quantity: number;
+  daily_rate: number;
+  days_used: number;
+  total_cost: number;
+  is_owned: boolean;
+}
+
+// Conversiones de costos
+export function laborCostToDb(cost: LaborCost): Omit<DbLaborCost, 'id'> {
+  return {
+    quotation_id: cost.quotationId,
+    role: cost.role,
+    description: cost.description,
+    quantity: cost.quantity,
+    daily_rate: cost.dailyRate,
+    days_worked: cost.daysWorked,
+    total_cost: cost.totalCost,
+    include_benefits: cost.includeBenefits,
+    benefits_percentage: cost.benefitsPercentage,
+  };
+}
+
+export function logisticsCostToDb(cost: LogisticsCost): Omit<DbLogisticsCost, 'id'> {
+  return {
+    quotation_id: cost.quotationId,
+    type: cost.type,
+    description: cost.description,
+    quantity: cost.quantity,
+    unit_cost: cost.unitCost,
+    total_cost: cost.totalCost,
+  };
+}
+
+export function materialCostToDb(cost: MaterialCost): Omit<DbMaterialCost, 'id'> {
+  return {
+    quotation_id: cost.quotationId,
+    type: cost.type,
+    description: cost.description,
+    quantity: cost.quantity,
+    unit_cost: cost.unitCost,
+    total_cost: cost.totalCost,
+    perforations_per_unit: cost.perforationsPerUnit,
+  };
+}
+
+export function equipmentCostToDb(cost: EquipmentCost): Omit<DbEquipmentCost, 'id'> {
+  return {
+    quotation_id: cost.quotationId,
+    type: cost.type,
+    description: cost.description,
+    quantity: cost.quantity,
+    daily_rate: cost.dailyRate,
+    days_used: cost.daysUsed,
+    total_cost: cost.totalCost,
+    is_owned: cost.isOwned,
+  };
+}

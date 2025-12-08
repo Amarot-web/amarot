@@ -66,19 +66,19 @@ interface QuotationState {
   removeItem: (id: string) => void;
 
   // Acciones de costos
-  addLaborCost: (cost: Omit<LaborCost, 'id' | 'quotationId'>) => void;
+  addLaborCost: (cost: Omit<LaborCost, 'id' | 'quotationId' | 'totalCost'>) => void;
   updateLaborCost: (id: string, cost: Partial<LaborCost>) => void;
   removeLaborCost: (id: string) => void;
 
-  addLogisticsCost: (cost: Omit<LogisticsCost, 'id' | 'quotationId'>) => void;
+  addLogisticsCost: (cost: Omit<LogisticsCost, 'id' | 'quotationId' | 'totalCost'>) => void;
   updateLogisticsCost: (id: string, cost: Partial<LogisticsCost>) => void;
   removeLogisticsCost: (id: string) => void;
 
-  addMaterialCost: (cost: Omit<MaterialCost, 'id' | 'quotationId'>) => void;
+  addMaterialCost: (cost: Omit<MaterialCost, 'id' | 'quotationId' | 'totalCost'>) => void;
   updateMaterialCost: (id: string, cost: Partial<MaterialCost>) => void;
   removeMaterialCost: (id: string) => void;
 
-  addEquipmentCost: (cost: Omit<EquipmentCost, 'id' | 'quotationId'>) => void;
+  addEquipmentCost: (cost: Omit<EquipmentCost, 'id' | 'quotationId' | 'totalCost'>) => void;
   updateEquipmentCost: (id: string, cost: Partial<EquipmentCost>) => void;
   removeEquipmentCost: (id: string) => void;
 
