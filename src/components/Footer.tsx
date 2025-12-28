@@ -9,10 +9,11 @@ const footerLinks = [
 ];
 
 const services = [
-  { name: 'Perforación Diamantina', href: '/servicios#perforacion' },
-  { name: 'Sellos Cortafuegos', href: '/servicios#cortafuegos' },
-  { name: 'Anclajes Químicos', href: '/servicios#anclajes' },
-  { name: 'Detección de Metales', href: '/servicios#deteccion' },
+  { name: 'Perforación Diamantina', href: '/servicios/perforaciones-diamantinas' },
+  { name: 'Anclajes Químicos', href: '/servicios/anclajes-quimicos' },
+  { name: 'Detección de Metales', href: '/servicios/deteccion-metales' },
+  { name: 'Pruebas de Anclaje', href: '/servicios/pruebas-anclaje-pull-out-test' },
+  { name: 'Sellos Cortafuego', href: '/servicios/sellos-cortafuego' },
 ];
 
 export default function Footer() {

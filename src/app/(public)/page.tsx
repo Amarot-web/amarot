@@ -2,33 +2,49 @@
 
 import Link from "next/link";
 import HeroCarousel from "@/components/HeroCarousel";
-import AnimatedSection, { AnimatedGrid } from "@/components/AnimatedSection";
+import AnimatedSection from "@/components/AnimatedSection";
 import StatsSection from "@/components/StatsSection";
 
 const services = [
   {
     title: "Perforación Diamantina",
-    description: "Nos especializamos en perforaciones diamantinas de todos los diámetros y profundidades posibles usando equipos Hilti de las más alta calidad, perforamos muros, losas y vigas de cualquier grosor.",
+    description: "Perforaciones de alta precisión en muros, losas y vigas de concreto armado, con equipos HILTI de última generación.",
     image: "/images/perforacion-diamantina.jpg",
     icon: "/icons/perforacion.svg",
+    href: "/servicios/perforaciones-diamantinas",
+    size: "large",
   },
   {
-    title: "Aplicación de Sellos Cortafuegos",
-    description: "Sellamos juntas de drywall, ductos de ventilación, bandejas de cableado y más utilizando químicos cortafuego Hilti o la marca de la preferencia del cliente.",
-    image: "/images/sellos-cortafuegos.jpg",
-    icon: "/icons/cortafuegos.svg",
-  },
-  {
-    title: "Aplicación de Anclajes Químicos",
-    description: "Perforación y aplicación de adhesivos químicos para la fijación de fierros de construcción o varillas roscadas para la instalación de diferentes estructuras.",
+    title: "Anclajes Químicos",
+    description: "Fijación segura de fierros de construcción y varillas roscadas con adhesivos químicos estructurales HILTI.",
     image: "/images/anclajes-quimicos.png",
     icon: "/icons/anclajes.svg",
+    href: "/servicios/anclajes-quimicos",
+    size: "large",
   },
   {
-    title: "Servicios de Detección de Metales",
-    description: "Escaneo de superficies con detectores de metales Hilti PS 30/ PS 50/ PS 200/ PS 1000 para la detección de fierros cables o tuberías.",
+    title: "Detección de Metales",
+    description: "Escaneo de estructuras con detectores HILTI. Reportes técnicos e imágenes 3D.",
     image: "/images/deteccion-metales.webp",
     icon: "/icons/deteccion.svg",
+    href: "/servicios/deteccion-metales",
+    size: "small",
+  },
+  {
+    title: "Pruebas de Anclaje",
+    description: "Pull Out Test para verificar resistencia real de anclajes. Informes técnicos detallados.",
+    image: "/images/pruebas-anclaje.jpg",
+    icon: "/icons/pullout.svg",
+    href: "/servicios/pruebas-anclaje-pull-out-test",
+    size: "small",
+  },
+  {
+    title: "Sellos Cortafuego",
+    description: "Sellado de juntas y penetraciones. Compartimentación contra fuego y humo.",
+    image: "/images/sellos-cortafuegos.jpg",
+    icon: "/icons/cortafuegos.svg",
+    href: "/servicios/sellos-cortafuego",
+    size: "small",
   },
 ];
 
@@ -58,76 +74,93 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-[#1E3A8A]">
               NUESTROS SERVICIOS
             </h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              Soluciones técnicas especializadas con equipos HILTI y más de 20 años de experiencia
+            </p>
           </AnimatedSection>
 
-          <AnimatedGrid
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-            staggerDelay={150}
-          >
+          {/* Grid Asimétrico 2+3 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {services.map((service, index) => {
-              const isRed = index === 0 || index === 2;
+              const isLarge = service.size === 'large';
+              const isRed = index === 0 || index === 3;
               const bgClass = isRed ? 'service-card-red' : 'service-card-dark';
+              const colSpan = isLarge ? 'lg:col-span-3' : 'lg:col-span-2';
+              const height = isLarge ? 'h-[350px] md:h-[400px]' : 'h-[280px] md:h-[300px]';
 
               return (
-                <div
+                <AnimatedSection
                   key={service.title}
-                  className={`service-card group rounded-lg overflow-hidden shadow-lg ${bgClass} relative`}
+                  animation="fade-up"
+                  delay={index * 100}
+                  className={`${colSpan}`}
                 >
-                  {/* Imagen con zoom en hover */}
-                  <div className="h-48 relative overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                      style={{
-                        backgroundImage: `url('${service.image}')`,
-                      }}
-                    />
-                    {/* Overlay oscuro en hover */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-500" />
+                  <Link
+                    href={service.href}
+                    className={`service-card group rounded-lg overflow-hidden shadow-lg ${bgClass} relative block ${height}`}
+                  >
+                    {/* Imagen con zoom en hover */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                        style={{
+                          backgroundImage: `url('${service.image}')`,
+                        }}
+                      />
+                      {/* Overlay gradiente */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    </div>
 
-                    {/* Ícono centrado que aparece en hover */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center transform scale-50 group-hover:scale-100 transition-transform duration-500">
-                        <img
-                          src={service.icon}
-                          alt=""
-                          className="w-10 h-10"
-                          style={{ filter: isRed ? 'invert(22%) sepia(93%) saturate(3292%) hue-rotate(350deg) brightness(84%) contrast(102%)' : 'invert(15%) sepia(50%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(95%)' }}
-                        />
+                    {/* Ícono superior derecho */}
+                    <div className="absolute top-4 right-4 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <img
+                        src={service.icon}
+                        alt=""
+                        className="w-7 h-7"
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                      />
+                    </div>
+
+                    {/* Contenido en la parte inferior */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      {/* Línea decorativa animada */}
+                      <div className="h-0.5 bg-white/20 mb-4">
+                        <div className={`h-full ${isRed ? 'bg-white' : 'bg-red-500'} w-0 group-hover:w-full transition-all duration-700`} />
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Contenido */}
-                  <div className="p-6 relative">
-                    {/* Línea decorativa animada */}
-                    <div className={`absolute top-0 left-6 right-6 h-0.5 ${isRed ? 'bg-white/30' : 'bg-white/20'}`}>
-                      <div className={`h-full ${isRed ? 'bg-white' : 'bg-red-500'} w-0 group-hover:w-full transition-all duration-700`} />
-                    </div>
+                      <h3 className={`font-bold ${isLarge ? 'text-xl md:text-2xl' : 'text-lg'} text-white mb-2`}>
+                        {service.title}
+                      </h3>
+                      <p className={`${isLarge ? 'text-sm md:text-base' : 'text-sm'} leading-relaxed text-white/80 mb-4`}>
+                        {service.description}
+                      </p>
 
-                    <h3 className="font-bold text-lg mb-3 text-white pt-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-white/90 mb-4">
-                      {service.description}
-                    </p>
-
-                    {/* Botón que aparece en hover */}
-                    <div className="overflow-hidden h-0 group-hover:h-10 transition-all duration-500">
-                      <Link
-                        href="/servicios"
-                        className={`inline-flex items-center gap-2 text-sm font-semibold ${isRed ? 'text-white hover:text-white/80' : 'text-red-400 hover:text-red-300'} transition-colors`}
-                      >
-                        Ver más
+                      {/* CTA */}
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:text-red-400 transition-colors">
+                        Ver servicio
                         <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
-                      </Link>
+                      </span>
                     </div>
-                  </div>
-                </div>
+                  </Link>
+                </AnimatedSection>
               );
             })}
-          </AnimatedGrid>
+          </div>
+
+          {/* Link a todos los servicios */}
+          <AnimatedSection animation="fade-up" delay={600} className="text-center mt-10">
+            <Link
+              href="/servicios"
+              className="inline-flex items-center gap-2 text-[#1E3A8A] font-semibold hover:text-red-600 transition-colors"
+            >
+              Ver todos los servicios
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </AnimatedSection>
         </div>
       </section>
 
