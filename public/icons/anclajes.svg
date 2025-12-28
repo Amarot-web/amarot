@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Anchor bolt -->
+  <rect x="28" y="8" width="8" height="40" rx="1" fill="currentColor" opacity="0.3"/>
+  <rect x="28" y="8" width="8" height="40" rx="1"/>
+  <!-- Bolt head -->
+  <polygon points="24,8 32,4 40,8 40,12 24,12" fill="currentColor"/>
+  <!-- Thread lines -->
+  <line x1="28" y1="20" x2="36" y2="20"/>
+  <line x1="28" y1="26" x2="36" y2="26"/>
+  <line x1="28" y1="32" x2="36" y2="32"/>
+  <line x1="28" y1="38" x2="36" y2="38"/>
+  <line x1="28" y1="44" x2="36" y2="44"/>
+  <!-- Expansion anchor -->
+  <path d="M24 48 L28 48 L26 58 L22 58 Z" fill="currentColor"/>
+  <path d="M36 48 L40 48 L42 58 L38 58 Z" fill="currentColor"/>
+  <!-- Chemical drops -->
+  <circle cx="18" cy="30" r="3" fill="currentColor" opacity="0.5"/>
+  <circle cx="46" cy="34" r="3" fill="currentColor" opacity="0.5"/>
+  <circle cx="16" cy="40" r="2" fill="currentColor" opacity="0.3"/>
+</svg>

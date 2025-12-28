@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Drill bit -->
+  <path d="M32 8 L32 48" stroke-width="3"/>
+  <path d="M28 12 L32 8 L36 12"/>
+  <path d="M26 20 L38 20"/>
+  <path d="M24 28 L40 28"/>
+  <path d="M22 36 L42 36"/>
+  <path d="M20 44 L44 44"/>
+  <!-- Diamond pattern on bit -->
+  <path d="M29 16 L32 13 L35 16 L32 19 Z" fill="currentColor"/>
+  <path d="M27 24 L32 19 L37 24 L32 29 Z" fill="currentColor" opacity="0.7"/>
+  <path d="M25 32 L32 25 L39 32 L32 39 Z" fill="currentColor" opacity="0.5"/>
+  <!-- Base/motor -->
+  <rect x="24" y="48" width="16" height="8" rx="2" fill="currentColor"/>
+  <rect x="20" y="56" width="24" height="4" rx="1"/>
+</svg>
