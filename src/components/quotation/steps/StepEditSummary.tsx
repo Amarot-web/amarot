@@ -5,15 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useQuotationStore } from '@/stores/quotationStore';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, formatPercentage } from '@/lib/calculations';
-import {
-  quotationItemToDb,
-  laborCostToDb,
-  logisticsCostToDb,
-  materialCostToDb,
-  equipmentCostToDb,
-} from '@/types/database';
 
-export default function StepSummary() {
+interface StepEditSummaryProps {
+  quotationId: string;
+}
+
+export default function StepEditSummary({ quotationId }: StepEditSummaryProps) {
   const router = useRouter();
   const {
     client,
@@ -42,8 +39,8 @@ export default function StepSummary() {
 
   const totals = getTotals();
 
-  // Guardar cotización
-  const handleSave = async (status: 'draft' | 'sent' = 'draft') => {
+  // Actualizar cotización existente
+  const handleUpdate = async () => {
     if (!client) {
       setError('No hay cliente seleccionado');
       return;
@@ -54,20 +51,18 @@ export default function StepSummary() {
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
 
       // Calcular fecha de validez
       const validityDate = new Date();
       validityDate.setDate(validityDate.getDate() + validityDays);
 
-      // Crear cotización
+      // Actualizar cotización
       // MODELO CORRECTO: El precio viene de los items, no de costos + margen
-      const { data: quotation, error: quotationError } = await supabase
+      const { error: quotationError } = await supabase
         .from('quotations')
-        .insert({
+        .update({
           client_id: client.id,
           type: quotationType,
-          status,
           duration_days: durationDays,
           duration_months: Math.ceil(durationDays / 30),
           // Precio de venta (lo que ve el cliente)
@@ -82,76 +77,104 @@ export default function StepSummary() {
           validity_date: validityDate.toISOString().split('T')[0],
           payment_terms: paymentTerms,
           notes,
-          created_by: user?.id,
-          sent_at: status === 'sent' ? new Date().toISOString() : null,
         })
-        .select()
-        .single();
+        .eq('id', quotationId);
 
       if (quotationError) throw quotationError;
 
-      // Insertar items
+      // Eliminar items existentes y crear nuevos
+      await supabase.from('quotation_items').delete().eq('quotation_id', quotationId);
       if (items.length > 0) {
         const itemsData = items.map((item, idx) => ({
-          ...quotationItemToDb({ ...item, quotationId: quotation.id }),
+          quotation_id: quotationId,
           sequence: idx,
+          display_type: item.displayType,
+          service_type: item.serviceType,
+          description: item.description,
+          diameter: item.diameter,
+          depth: item.depth,
+          working_height: item.workingHeight,
+          quantity: item.quantity,
+          unit: item.unit,
+          unit_price: item.unitPrice,
+          total_price: item.totalPrice,
         }));
-        const { error: itemsError } = await supabase
-          .from('quotation_items')
-          .insert(itemsData);
+        const { error: itemsError } = await supabase.from('quotation_items').insert(itemsData);
         if (itemsError) throw itemsError;
       }
 
-      // Insertar costos de mano de obra
+      // Eliminar y recrear costos de mano de obra
+      await supabase.from('labor_costs').delete().eq('quotation_id', quotationId);
       if (laborCosts.length > 0) {
-        const laborData = laborCosts.map((cost) =>
-          laborCostToDb({ ...cost, quotationId: quotation.id })
-        );
-        const { error: laborError } = await supabase
-          .from('labor_costs')
-          .insert(laborData);
+        const laborData = laborCosts.map((cost) => ({
+          quotation_id: quotationId,
+          role: cost.role,
+          description: cost.description,
+          quantity: cost.quantity,
+          daily_rate: cost.dailyRate,
+          days_worked: cost.daysWorked,
+          total_cost: cost.totalCost,
+          include_benefits: cost.includeBenefits,
+          benefits_percentage: cost.benefitsPercentage,
+        }));
+        const { error: laborError } = await supabase.from('labor_costs').insert(laborData);
         if (laborError) throw laborError;
       }
 
-      // Insertar costos logísticos
+      // Eliminar y recrear costos logísticos
+      await supabase.from('logistics_costs').delete().eq('quotation_id', quotationId);
       if (logisticsCosts.length > 0) {
-        const logisticsData = logisticsCosts.map((cost) =>
-          logisticsCostToDb({ ...cost, quotationId: quotation.id })
-        );
-        const { error: logisticsError } = await supabase
-          .from('logistics_costs')
-          .insert(logisticsData);
+        const logisticsData = logisticsCosts.map((cost) => ({
+          quotation_id: quotationId,
+          type: cost.type,
+          description: cost.description,
+          quantity: cost.quantity,
+          unit_cost: cost.unitCost,
+          total_cost: cost.totalCost,
+        }));
+        const { error: logisticsError } = await supabase.from('logistics_costs').insert(logisticsData);
         if (logisticsError) throw logisticsError;
       }
 
-      // Insertar costos de materiales
+      // Eliminar y recrear costos de materiales
+      await supabase.from('material_costs').delete().eq('quotation_id', quotationId);
       if (materialCosts.length > 0) {
-        const materialsData = materialCosts.map((cost) =>
-          materialCostToDb({ ...cost, quotationId: quotation.id })
-        );
-        const { error: materialsError } = await supabase
-          .from('material_costs')
-          .insert(materialsData);
+        const materialsData = materialCosts.map((cost) => ({
+          quotation_id: quotationId,
+          type: cost.type,
+          description: cost.description,
+          quantity: cost.quantity,
+          unit_cost: cost.unitCost,
+          total_cost: cost.totalCost,
+          perforations_per_unit: cost.perforationsPerUnit,
+        }));
+        const { error: materialsError } = await supabase.from('material_costs').insert(materialsData);
         if (materialsError) throw materialsError;
       }
 
-      // Insertar costos de equipos
+      // Eliminar y recrear costos de equipos
+      await supabase.from('equipment_costs').delete().eq('quotation_id', quotationId);
       if (equipmentCosts.length > 0) {
-        const equipmentData = equipmentCosts.map((cost) =>
-          equipmentCostToDb({ ...cost, quotationId: quotation.id })
-        );
-        const { error: equipmentError } = await supabase
-          .from('equipment_costs')
-          .insert(equipmentData);
+        const equipmentData = equipmentCosts.map((cost) => ({
+          quotation_id: quotationId,
+          type: cost.type,
+          description: cost.description,
+          quantity: cost.quantity,
+          daily_rate: cost.dailyRate,
+          days_used: cost.daysUsed,
+          total_cost: cost.totalCost,
+          is_owned: cost.isOwned,
+        }));
+        const { error: equipmentError } = await supabase.from('equipment_costs').insert(equipmentData);
         if (equipmentError) throw equipmentError;
       }
 
       // Limpiar store y redirigir
       reset();
-      router.push(`/cotizador/${quotation.id}`);
+      router.push(`/cotizador/${quotationId}`);
     } catch (err) {
-      console.error('Error al guardar:', err);
-      setError(err instanceof Error ? err.message : 'Error al guardar la cotización');
+      console.error('Error al actualizar:', err);
+      setError(err instanceof Error ? err.message : 'Error al actualizar la cotización');
     } finally {
       setSaving(false);
     }
@@ -382,25 +405,15 @@ export default function StepSummary() {
         <div className="flex-1" />
 
         <button
-          onClick={() => handleSave('draft')}
+          onClick={() => router.push(`/cotizador/${quotationId}`)}
           disabled={saving}
-          className="flex items-center justify-center gap-2 px-6 py-3 border border-[#1E3A8A] text-[#1E3A8A] rounded-lg hover:bg-[#1E3A8A]/5 font-semibold disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold disabled:opacity-50"
         >
-          {saving ? (
-            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-          )}
-          Guardar Borrador
+          Cancelar
         </button>
 
         <button
-          onClick={() => handleSave('sent')}
+          onClick={handleUpdate}
           disabled={saving}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-lg font-semibold disabled:opacity-50"
         >
@@ -411,10 +424,10 @@ export default function StepSummary() {
             </svg>
           ) : (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           )}
-          Generar Cotización
+          Guardar Cambios
         </button>
       </div>
     </div>

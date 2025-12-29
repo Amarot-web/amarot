@@ -367,8 +367,8 @@ export default function StepCosts() {
                 ))}
               </select>
               <input type="text" placeholder="Descripción" value={newLabor.description} onChange={(e) => setNewLabor({ ...newLabor, description: e.target.value })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="1" placeholder="Cant." value={newLabor.quantity} onChange={(e) => setNewLabor({ ...newLabor, quantity: parseInt(e.target.value) || 1 })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="0" placeholder="Jornal" value={newLabor.dailyRate} onChange={(e) => setNewLabor({ ...newLabor, dailyRate: parseFloat(e.target.value) || 0 })} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="1" placeholder="Cant." value={newLabor.quantity || ''} onChange={(e) => setNewLabor({ ...newLabor, quantity: parseInt(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="0" placeholder="Jornal" value={newLabor.dailyRate || ''} onChange={(e) => setNewLabor({ ...newLabor, dailyRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
               <button onClick={handleAddLabor} className="bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90">Agregar</button>
             </div>
 
@@ -403,8 +403,8 @@ export default function StepCosts() {
                 ))}
               </select>
               <input type="text" placeholder="Descripción" value={newLogistics.description} onChange={(e) => setNewLogistics({ ...newLogistics, description: e.target.value })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="1" placeholder="Cant." value={newLogistics.quantity} onChange={(e) => setNewLogistics({ ...newLogistics, quantity: parseInt(e.target.value) || 1 })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="0" placeholder="Costo Unit." value={newLogistics.unitCost} onChange={(e) => setNewLogistics({ ...newLogistics, unitCost: parseFloat(e.target.value) || 0 })} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="1" placeholder="Cant." value={newLogistics.quantity || ''} onChange={(e) => setNewLogistics({ ...newLogistics, quantity: parseInt(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="0" placeholder="Costo Unit." value={newLogistics.unitCost || ''} onChange={(e) => setNewLogistics({ ...newLogistics, unitCost: parseFloat(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
               <button onClick={handleAddLogistics} className="bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90">Agregar</button>
             </div>
 
@@ -451,8 +451,8 @@ export default function StepCosts() {
                 ))}
               </select>
               <input type="text" placeholder="Descripción" value={newMaterial.description} onChange={(e) => setNewMaterial({ ...newMaterial, description: e.target.value })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="1" placeholder="Cant." value={newMaterial.quantity} onChange={(e) => setNewMaterial({ ...newMaterial, quantity: parseInt(e.target.value) || 1 })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="0" placeholder="Costo Unit." value={newMaterial.unitCost} onChange={(e) => setNewMaterial({ ...newMaterial, unitCost: parseFloat(e.target.value) || 0 })} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="1" placeholder="Cant." value={newMaterial.quantity || ''} onChange={(e) => setNewMaterial({ ...newMaterial, quantity: parseInt(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="0" placeholder="Costo Unit." value={newMaterial.unitCost || ''} onChange={(e) => setNewMaterial({ ...newMaterial, unitCost: parseFloat(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
               <button onClick={handleAddMaterial} className="bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90">Agregar</button>
             </div>
 
@@ -486,8 +486,8 @@ export default function StepCosts() {
                 ))}
               </select>
               <input type="text" placeholder="Descripción" value={newEquipment.description} onChange={(e) => setNewEquipment({ ...newEquipment, description: e.target.value })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="1" placeholder="Cant." value={newEquipment.quantity} onChange={(e) => setNewEquipment({ ...newEquipment, quantity: parseInt(e.target.value) || 1 })} className="px-3 py-2 border rounded-lg" />
-              <input type="number" min="0" placeholder="Tarifa/día" value={newEquipment.dailyRate} onChange={(e) => setNewEquipment({ ...newEquipment, dailyRate: parseFloat(e.target.value) || 0 })} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="1" placeholder="Cant." value={newEquipment.quantity || ''} onChange={(e) => setNewEquipment({ ...newEquipment, quantity: parseInt(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
+              <input type="number" min="0" placeholder="Tarifa/día" value={newEquipment.dailyRate || ''} onChange={(e) => setNewEquipment({ ...newEquipment, dailyRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => e.target.select()} className="px-3 py-2 border rounded-lg" />
               <button onClick={handleAddEquipment} className="bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90">Agregar</button>
             </div>
 

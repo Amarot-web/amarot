@@ -231,10 +231,11 @@ export default function StepServices() {
                       <input
                         type="number"
                         min="1"
-                        value={item.quantity}
+                        value={item.quantity || ''}
                         onChange={(e) =>
-                          updateItem(item.id, { quantity: parseInt(e.target.value) || 1 })
+                          updateItem(item.id, { quantity: parseInt(e.target.value) || 0 })
                         }
+                        onFocus={(e) => e.target.select()}
                         className="w-16 text-center border border-gray-300 rounded px-2 py-1"
                       />
                     </td>
@@ -337,9 +338,11 @@ export default function StepServices() {
               <input
                 type="number"
                 min="1"
-                value={newItem.quantity}
-                onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 1 })}
+                value={newItem.quantity || ''}
+                onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 0 })}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
+                placeholder="1"
               />
             </div>
             <div>
@@ -350,9 +353,11 @@ export default function StepServices() {
                 type="number"
                 min="0"
                 step="0.01"
-                value={newItem.unitPrice}
+                value={newItem.unitPrice || ''}
                 onChange={(e) => setNewItem({ ...newItem, unitPrice: parseFloat(e.target.value) || 0 })}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
+                placeholder="0.00"
               />
             </div>
           </div>
@@ -383,8 +388,9 @@ export default function StepServices() {
                 <input
                   type="number"
                   min="0"
-                  value={newItem.depth}
+                  value={newItem.depth || ''}
                   onChange={(e) => setNewItem({ ...newItem, depth: parseFloat(e.target.value) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
                   placeholder="15"
                 />
@@ -397,8 +403,9 @@ export default function StepServices() {
                   type="number"
                   min="0"
                   step="0.5"
-                  value={newItem.workingHeight}
+                  value={newItem.workingHeight || ''}
                   onChange={(e) => setNewItem({ ...newItem, workingHeight: parseFloat(e.target.value) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent"
                   placeholder="2"
                 />

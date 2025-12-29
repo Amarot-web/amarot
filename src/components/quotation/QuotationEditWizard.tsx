@@ -2,10 +2,32 @@
 
 import { useEffect } from 'react';
 import { useQuotationStore } from '@/stores/quotationStore';
+import type { Client, QuotationItem, LaborCost, LogisticsCost, MaterialCost, EquipmentCost } from '@/types/database';
 import StepClient from './steps/StepClient';
 import StepServices from './steps/StepServices';
 import StepCosts from './steps/StepCosts';
-import StepSummary from './steps/StepSummary';
+import StepEditSummary from './steps/StepEditSummary';
+
+interface InitialData {
+  quotationId: string;
+  client: Client | null;
+  quotationType: 'small' | 'large';
+  currency: 'PEN' | 'USD';
+  durationDays: number;
+  marginPercentage: number;
+  validityDays: number;
+  paymentTerms: string;
+  notes: string;
+  items: QuotationItem[];
+  laborCosts: LaborCost[];
+  logisticsCosts: LogisticsCost[];
+  materialCosts: MaterialCost[];
+  equipmentCosts: EquipmentCost[];
+}
+
+interface QuotationEditWizardProps {
+  initialData: InitialData;
+}
 
 const steps = [
   { id: 0, name: 'Cliente', description: 'Datos del cliente' },
@@ -14,13 +36,39 @@ const steps = [
   { id: 3, name: 'Resumen', description: 'Revisión y precio final' },
 ];
 
-export default function QuotationWizard() {
-  const { currentStep, goToStep, reset } = useQuotationStore();
+export default function QuotationEditWizard({ initialData }: QuotationEditWizardProps) {
+  const store = useQuotationStore();
 
-  // Resetear el store al montar el componente para empezar con una cotización limpia
+  // Cargar datos iniciales al montar
   useEffect(() => {
-    reset();
-  }, [reset]);
+    // Reset primero
+    store.reset();
+
+    // Cargar cliente
+    if (initialData.client) {
+      store.setClient(initialData.client);
+    }
+
+    // Cargar configuración
+    store.setQuotationType(initialData.quotationType);
+    store.setCurrency(initialData.currency);
+    store.setDurationDays(initialData.durationDays);
+    store.setMarginPercentage(initialData.marginPercentage);
+    store.setValidityDays(initialData.validityDays);
+    store.setPaymentTerms(initialData.paymentTerms);
+    store.setNotes(initialData.notes);
+
+    // Cargar items directamente en el state (bypass addItem para mantener IDs)
+    useQuotationStore.setState({ items: initialData.items });
+
+    // Cargar costos
+    useQuotationStore.setState({ laborCosts: initialData.laborCosts });
+    useQuotationStore.setState({ logisticsCosts: initialData.logisticsCosts });
+    useQuotationStore.setState({ materialCosts: initialData.materialCosts });
+    useQuotationStore.setState({ equipmentCosts: initialData.equipmentCosts });
+  }, []);
+
+  const { currentStep, goToStep } = store;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -31,7 +79,7 @@ export default function QuotationWizard() {
       case 2:
         return <StepCosts />;
       case 3:
-        return <StepSummary />;
+        return <StepEditSummary quotationId={initialData.quotationId} />;
       default:
         return <StepClient />;
     }

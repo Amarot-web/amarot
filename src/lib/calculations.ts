@@ -15,13 +15,13 @@ import type {
 export const IGV_RATE = 0.18; // 18% IGV Perú
 
 // Factor de altura para perforación
-// A mayor altura, mayor dificultad y precio
-export const HEIGHT_FACTORS: Record<string, number> = {
-  '0-2': 1.0,    // Hasta 2m: precio base
-  '2-4': 1.15,   // 2-4m: +15%
-  '4-6': 1.30,   // 4-6m: +30%
-  '6+': 1.50,    // +6m: +50%
-};
+// DESACTIVADO: Pendiente de definir con el cliente los valores reales
+// export const HEIGHT_FACTORS: Record<string, number> = {
+//   '0-2': 1.0,    // Hasta 2m: precio base
+//   '2-4': 1.15,   // 2-4m: +15%
+//   '4-6': 1.30,   // 4-6m: +30%
+//   '6+': 1.50,    // +6m: +50%
+// };
 
 // Descuento por volumen (cantidad de perforaciones)
 export const VOLUME_DISCOUNTS: Record<number, number> = {
@@ -57,12 +57,12 @@ export const DAILY_COSTS = {
 
 /**
  * Obtiene el factor de altura según los metros de trabajo
+ * DESACTIVADO: Siempre retorna 1.0 (sin factor)
+ * Pendiente definir con el cliente si aplica y qué valores usar
  */
 export function getHeightFactor(height: number): number {
-  if (height <= 2) return HEIGHT_FACTORS['0-2'];
-  if (height <= 4) return HEIGHT_FACTORS['2-4'];
-  if (height <= 6) return HEIGHT_FACTORS['4-6'];
-  return HEIGHT_FACTORS['6+'];
+  // Factor desactivado - retorna siempre 1.0
+  return 1.0;
 }
 
 /**
@@ -278,47 +278,66 @@ export function calculateItemPrice(
 }
 
 /**
- * Calcula todos los totales (alias para calculateQuotationTotals con nombres más simples)
+ * Calcula los totales de la cotización
+ *
+ * MODELO CORRECTO:
+ * - El precio de venta se define por los ITEMS (servicios ofrecidos)
+ * - Los costos son para análisis interno de rentabilidad
+ * - Rentabilidad = Ingresos - Costos
  */
 export function calculateTotals(
   items: QuotationItem[],
   laborCosts: LaborCost[],
   logisticsCosts: LogisticsCost[],
   materialCosts: MaterialCost[],
-  equipmentCosts: EquipmentCost[],
-  marginPercentage: number
+  equipmentCosts: EquipmentCost[]
 ): {
-  itemsTotal: number;
+  // Lo que se factura al cliente
+  itemsTotal: number;      // Suma de servicios
+  subtotal: number;        // = itemsTotal (base imponible)
+  igv: number;             // 18% del subtotal
+  total: number;           // Subtotal + IGV (TOTAL A FACTURAR)
+
+  // Análisis interno de costos
   laborTotal: number;
   logisticsTotal: number;
   materialsTotal: number;
   equipmentTotal: number;
-  costTotal: number;
-  marginAmount: number;
-  subtotal: number;
-  igv: number;
-  total: number;
+  costsTotal: number;      // Suma de todos los costos
+
+  // Rentabilidad estimada
+  profitAmount: number;    // Subtotal - Costos
+  profitPercentage: number; // (Profit / Subtotal) * 100
 } {
-  const totals = calculateQuotationTotals(
-    items,
-    laborCosts,
-    logisticsCosts,
-    materialCosts,
-    equipmentCosts,
-    marginPercentage
-  );
+  // Calcular ingresos (lo que se factura)
+  const itemsTotal = sumItems(items);
+  const subtotal = itemsTotal;
+  const igv = subtotal * IGV_RATE;
+  const total = subtotal + igv;
+
+  // Calcular costos internos
+  const laborTotal = sumLaborCosts(laborCosts);
+  const logisticsTotal = sumLogisticsCosts(logisticsCosts);
+  const materialsTotal = sumMaterialCosts(materialCosts);
+  const equipmentTotal = sumEquipmentCosts(equipmentCosts);
+  const costsTotal = laborTotal + logisticsTotal + materialsTotal + equipmentTotal;
+
+  // Calcular rentabilidad
+  const profitAmount = subtotal - costsTotal;
+  const profitPercentage = subtotal > 0 ? (profitAmount / subtotal) * 100 : 0;
 
   return {
-    itemsTotal: totals.itemsSubtotal,
-    laborTotal: totals.laborSubtotal,
-    logisticsTotal: totals.logisticsSubtotal,
-    materialsTotal: totals.materialsSubtotal,
-    equipmentTotal: totals.equipmentSubtotal,
-    costTotal: totals.costTotal,
-    marginAmount: totals.marginAmount,
-    subtotal: totals.subtotal,
-    igv: totals.igv,
-    total: totals.total,
+    itemsTotal,
+    subtotal,
+    igv,
+    total,
+    laborTotal,
+    logisticsTotal,
+    materialsTotal,
+    equipmentTotal,
+    costsTotal,
+    profitAmount,
+    profitPercentage,
   };
 }
 

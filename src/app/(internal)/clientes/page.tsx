@@ -1,52 +1,27 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { formatCurrency } from '@/lib/calculations';
-import QuotationActions from './QuotationActions';
+import ClientActions from './ClientActions';
 
-// Colores de estado
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  sent: 'bg-blue-100 text-blue-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-};
-
-const statusLabels = {
-  draft: 'Borrador',
-  sent: 'Enviada',
-  approved: 'Aprobada',
-  rejected: 'Rechazada',
-};
-
-export default async function CotizadorPage() {
+export default async function ClientesPage() {
   const supabase = await createClient();
 
-  const { data: quotations, error } = await supabase
-    .from('quotations')
-    .select(
-      `
-      *,
-      clients (
-        company_name,
-        contact_name
-      )
-    `
-    )
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const { data: clients, error } = await supabase
+    .from('clients')
+    .select('*')
+    .order('company_name');
 
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cotizaciones</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
           <p className="text-gray-500 mt-1">
-            Gestiona todas las cotizaciones de AMAROT
+            Gestiona la base de datos de clientes
           </p>
         </div>
         <Link
-          href="/cotizador/nueva"
+          href="/clientes/nuevo"
           className="inline-flex items-center justify-center gap-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-semibold py-3 px-6 rounded-lg transition-colors"
         >
           <svg
@@ -62,36 +37,28 @@ export default async function CotizadorPage() {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Nueva Cotización
+          Nuevo Cliente
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-500">
-            Total Cotizaciones
-          </div>
+          <div className="text-sm font-medium text-gray-500">Total Clientes</div>
           <div className="mt-2 text-3xl font-bold text-gray-900">
-            {quotations?.length || 0}
+            {clients?.length || 0}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-500">Borradores</div>
-          <div className="mt-2 text-3xl font-bold text-gray-900">
-            {quotations?.filter((q) => q.status === 'draft').length || 0}
+          <div className="text-sm font-medium text-gray-500">Con RUC</div>
+          <div className="mt-2 text-3xl font-bold text-[#1E3A8A]">
+            {clients?.filter((c) => c.ruc).length || 0}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-500">Enviadas</div>
-          <div className="mt-2 text-3xl font-bold text-blue-600">
-            {quotations?.filter((q) => q.status === 'sent').length || 0}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-500">Aprobadas</div>
+          <div className="text-sm font-medium text-gray-500">Con Email</div>
           <div className="mt-2 text-3xl font-bold text-green-600">
-            {quotations?.filter((q) => q.status === 'approved').length || 0}
+            {clients?.filter((c) => c.contact_email).length || 0}
           </div>
         </div>
       </div>
@@ -100,10 +67,10 @@ export default async function CotizadorPage() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {error ? (
           <div className="p-8 text-center">
-            <p className="text-red-600">Error al cargar cotizaciones</p>
+            <p className="text-red-600">Error al cargar clientes</p>
             <p className="text-gray-500 text-sm mt-1">{error.message}</p>
           </div>
-        ) : !quotations || quotations.length === 0 ? (
+        ) : !clients || clients.length === 0 ? (
           <div className="p-12 text-center">
             <svg
               className="w-16 h-16 text-gray-300 mx-auto mb-4"
@@ -115,17 +82,17 @@ export default async function CotizadorPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1.5}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No hay cotizaciones
+              No hay clientes
             </h3>
             <p className="text-gray-500 mb-6">
-              Crea tu primera cotización para empezar
+              Agrega tu primer cliente para empezar
             </p>
             <Link
-              href="/cotizador/nueva"
+              href="/clientes/nuevo"
               className="inline-flex items-center gap-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-semibold py-2 px-4 rounded-lg transition-colors"
             >
               <svg
@@ -141,7 +108,7 @@ export default async function CotizadorPage() {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Nueva Cotización
+              Nuevo Cliente
             </Link>
           </div>
         ) : (
@@ -150,19 +117,16 @@ export default async function CotizadorPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Código
+                    Empresa
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliente
+                    Contacto
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
+                    Teléfono
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
+                    RUC
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
@@ -170,49 +134,38 @@ export default async function CotizadorPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {quotations.map((quotation) => (
-                  <tr key={quotation.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link
-                        href={`/cotizador/${quotation.id}`}
-                        className="text-[#1E3A8A] hover:underline font-medium"
-                      >
-                        {quotation.code}
-                      </Link>
-                    </td>
+                {clients.map((client) => (
+                  <tr key={client.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {quotation.clients?.company_name || 'Sin cliente'}
+                        {client.company_name}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {quotation.clients?.contact_name || '-'}
-                      </div>
+                      {client.address && (
+                        <div className="text-xs text-gray-500 truncate max-w-xs">
+                          {client.address}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(quotation.total || 0, quotation.currency)}
+                      <div className="text-sm text-gray-900">
+                        {client.contact_name}
                       </div>
+                      {client.contact_email && (
+                        <div className="text-xs text-gray-500">
+                          {client.contact_email}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          statusColors[quotation.status as keyof typeof statusColors]
-                        }`}
-                      >
-                        {statusLabels[quotation.status as keyof typeof statusLabels]}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {client.contact_phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(quotation.created_at).toLocaleDateString('es-PE', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {client.ruc || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <QuotationActions
-                        quotationId={quotation.id}
-                        status={quotation.status}
+                      <ClientActions
+                        clientId={client.id}
+                        clientName={client.company_name}
                       />
                     </td>
                   </tr>

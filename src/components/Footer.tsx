@@ -4,7 +4,7 @@ const footerLinks = [
   { name: 'Inicio', href: '/' },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Servicios', href: '/servicios' },
-  { name: 'Alquiler', href: '/alquiler' },
+  { name: 'Alquiler de Equipos', href: '/alquiler' },
   { name: 'Contacto', href: '/contacto' },
 ];
 
@@ -14,6 +14,7 @@ const services = [
   { name: 'Detección de Metales', href: '/servicios/deteccion-metales' },
   { name: 'Pruebas de Anclaje', href: '/servicios/pruebas-anclaje-pull-out-test' },
   { name: 'Sellos Cortafuego', href: '/servicios/sellos-cortafuego' },
+  { name: 'Alquiler de Equipos HILTI', href: '/alquiler' },
 ];
 
 export default function Footer() {

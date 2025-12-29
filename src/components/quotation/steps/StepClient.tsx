@@ -77,12 +77,12 @@ export default function StepClient() {
     const { data, error } = await supabase
       .from('clients')
       .insert({
-        company_name: newClient.companyName,
+        company_name: newClient.companyName.toUpperCase(),
         ruc: newClient.ruc || null,
-        contact_name: newClient.contactName,
-        contact_email: newClient.contactEmail || null,
+        contact_name: newClient.contactName.toUpperCase(),
+        contact_email: newClient.contactEmail?.toLowerCase() || null,
         contact_phone: newClient.contactPhone,
-        address: newClient.address || null,
+        address: newClient.address?.toUpperCase() || null,
       })
       .select()
       .single();

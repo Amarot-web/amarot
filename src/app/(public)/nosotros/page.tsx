@@ -206,41 +206,12 @@ export default function NosotrosPage() {
         </div>
       </section>
 
-      {/* Nuestro Compromiso */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedSection animation="fade-up">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#1E3A8A] mb-4 text-center">
-              NUESTRO COMPROMISO
-            </h2>
-            <p className="text-gray-600 text-center mb-10">
-              En AMAROT PERÚ SAC trabajamos con una filosofía clara:
-            </p>
-
-            <div className="space-y-4 max-w-xl mx-auto">
-              {compromiso.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 bg-white p-5 rounded-lg shadow-sm border-l-4 border-red-500"
-                >
-                  <span className="text-gray-700">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-gray-600 text-center mt-10 italic max-w-2xl mx-auto">
-              "Seguimos creciendo con el mismo propósito con el que iniciamos: resolver desafíos reales de obra con soluciones técnicas confiables, aportando valor a cada proyecto y contribuyendo al desarrollo del país."
-            </p>
-          </AnimatedSection>
-        </div>
-      </section>
-
       {/* Misión y Visión */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Misión */}
-            <AnimatedSection animation="fade-right" className="bg-gray-50 p-8 rounded-xl">
+            <AnimatedSection animation="fade-right" className="bg-white p-8 rounded-xl shadow-sm">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +226,7 @@ export default function NosotrosPage() {
             </AnimatedSection>
 
             {/* Visión */}
-            <AnimatedSection animation="fade-left" delay={200} className="bg-gray-50 p-8 rounded-xl">
+            <AnimatedSection animation="fade-left" delay={200} className="bg-white p-8 rounded-xl shadow-sm">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-[#1E3A8A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,6 +241,35 @@ export default function NosotrosPage() {
               </p>
             </AnimatedSection>
           </div>
+        </div>
+      </section>
+
+      {/* Nuestro Compromiso */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-up">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#1E3A8A] mb-4 text-center">
+              NUESTRO COMPROMISO
+            </h2>
+            <p className="text-gray-600 text-center mb-10">
+              En AMAROT PERÚ SAC trabajamos con una filosofía clara:
+            </p>
+
+            <div className="space-y-4 max-w-xl mx-auto">
+              {compromiso.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-4 bg-gray-50 p-5 rounded-lg shadow-sm border-l-4 border-red-500"
+                >
+                  <span className="text-gray-700">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-gray-600 text-center mt-10 italic max-w-2xl mx-auto">
+              "Seguimos creciendo con el mismo propósito con el que iniciamos: resolver desafíos reales de obra con soluciones técnicas confiables, aportando valor a cada proyecto y contribuyendo al desarrollo del país."
+            </p>
+          </AnimatedSection>
         </div>
       </section>
 

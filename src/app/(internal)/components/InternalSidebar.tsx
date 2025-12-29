@@ -97,10 +97,10 @@ export default function InternalSidebar({ user }: InternalSidebarProps) {
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <Image
-          src="/images/logo.svg"
+          src="/images/logo.png"
           alt="AMAROT"
-          width={120}
-          height={40}
+          width={140}
+          height={45}
         />
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -142,7 +142,7 @@ export default function InternalSidebar({ user }: InternalSidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-40 h-full w-64 bg-[#1E3A8A] transform transition-transform duration-300
+          fixed top-0 left-0 z-40 h-full w-64 bg-black transform transition-transform duration-300
           lg:translate-x-0
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -152,14 +152,13 @@ export default function InternalSidebar({ user }: InternalSidebarProps) {
           <div className="p-6 border-b border-white/10">
             <Link href="/" className="block">
               <Image
-                src="/images/logo.svg"
+                src="/images/logo-blanco.png"
                 alt="AMAROT"
-                width={150}
-                height={50}
-                className="brightness-0 invert"
+                width={180}
+                height={60}
               />
             </Link>
-            <p className="text-white/60 text-sm mt-2">Sistema de Cotización</p>
+            <p className="text-white text-xl font-semibold mt-3 text-center">Cotizador</p>
           </div>
 
           {/* Navigation */}

@@ -307,8 +307,7 @@ export const useQuotationStore = create<QuotationState>((set, get) => ({
       state.laborCosts,
       state.logisticsCosts,
       state.materialCosts,
-      state.equipmentCosts,
-      state.marginPercentage
+      state.equipmentCosts
     );
   },
 
