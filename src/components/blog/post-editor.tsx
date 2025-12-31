@@ -3,8 +3,8 @@
 import { useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import type { BlogPost, BlogTag, TipTapContent, TipTapNode } from "@/types/blog"
-import { generateSlug } from "@/types/blog"
+import type { BlogPost, BlogTag, TipTapContent } from "@/types/blog"
+import { generateSlug, extractTextFromTipTap } from "@/types/blog"
 import { BlogEditor, type JSONContent } from "./editor"
 import { createPost, updatePostStatus, createTag } from "@/lib/blog/actions"
 import { Save, Send, Eye, Clock, FileText, Settings, Search, X, Plus } from "lucide-react"
@@ -12,35 +12,6 @@ import { BlogAgent } from "./agents/blog-agent"
 import { CoverImageUploader } from "./cover-image-uploader"
 
 type SEOField = 'all' | 'excerpt' | 'metaTitle' | 'metaDescription'
-
-/**
- * Extrae texto plano del contenido TipTap para enviar a la API de SEO
- */
-function extractTextFromTipTap(content: TipTapContent | null, maxLength: number = 3000): string {
-  if (!content || !content.content) return ''
-
-  const extractFromNode = (node: TipTapNode): string => {
-    // Si tiene texto directo
-    if (node.text) {
-      return node.text
-    }
-
-    // Si tiene contenido hijo
-    if (node.content && Array.isArray(node.content)) {
-      return node.content.map(child => extractFromNode(child)).join(' ')
-    }
-
-    return ''
-  }
-
-  const fullText = content.content
-    .map(node => extractFromNode(node))
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-  return fullText.slice(0, maxLength)
-}
 
 interface PostEditorProps {
   post?: BlogPost
@@ -311,7 +282,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
 
   // Verificar si hay contenido suficiente para generar SEO
   // Requerimos al menos 200 caracteres de contenido para que el agente sea útil
-  const contentText = extractTextFromTipTap(content as TipTapContent, 3000)
+  const contentText = extractTextFromTipTap(content as TipTapContent, 3000, false)
   const hasEnoughContent = contentText.length >= 200
 
   return (

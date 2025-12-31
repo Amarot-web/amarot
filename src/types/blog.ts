@@ -1,5 +1,4 @@
 // Tipos para el Sistema de Blog AMAROT
-// Basado en la implementación de tonior.xyz con TipTap
 
 // ==================== ENUMS ====================
 
@@ -122,51 +121,6 @@ export interface DbBlogMedia {
   created_at: string;
 }
 
-// ==================== CONVERSIONES ====================
-
-export function dbBlogTagToBlogTag(db: DbBlogTag): BlogTag {
-  return {
-    id: db.id,
-    name: db.name,
-    slug: db.slug,
-    createdAt: new Date(db.created_at),
-  };
-}
-
-export function dbBlogPostToBlogPost(db: DbBlogPost): BlogPost {
-  return {
-    id: db.id,
-    title: db.title,
-    slug: db.slug,
-    excerpt: db.excerpt,
-    content: db.content,
-    featuredImage: db.featured_image,
-    status: db.status,
-    publishAt: db.publish_at ? new Date(db.publish_at) : null,
-    metaTitle: db.meta_title,
-    metaDescription: db.meta_description,
-    ogImageUrl: db.og_image_url,
-    canonicalUrl: db.canonical_url,
-    noindex: db.noindex,
-    authorId: db.author_id,
-    createdAt: new Date(db.created_at),
-    updatedAt: new Date(db.updated_at),
-  };
-}
-
-export function dbBlogMediaToBlogMedia(db: DbBlogMedia): BlogMedia {
-  return {
-    id: db.id,
-    filename: db.filename,
-    url: db.url,
-    altText: db.alt_text,
-    sizeBytes: db.size_bytes,
-    mimeType: db.mime_type,
-    uploadedBy: db.uploaded_by,
-    createdAt: new Date(db.created_at),
-  };
-}
-
 // ==================== FORM TYPES ====================
 
 export interface BlogPostFormData {
@@ -227,24 +181,35 @@ export function generateSlug(title: string): string {
 }
 
 /**
- * Extrae texto plano del contenido TipTap para excerpts
+ * Extrae texto plano del contenido TipTap
+ * @param content - Contenido TipTap
+ * @param maxLength - Longitud máxima (default: 160)
+ * @param addEllipsis - Agregar '...' si se trunca (default: true)
  */
-export function extractTextFromTipTap(content: TipTapContent | null, maxLength = 160): string {
+export function extractTextFromTipTap(
+  content: TipTapContent | null,
+  maxLength = 160,
+  addEllipsis = true
+): string {
   if (!content || !content.content) return '';
 
-  const extractText = (nodes: TipTapNode[]): string => {
-    return nodes
-      .map(node => {
-        if (node.text) return node.text;
-        if (node.content) return extractText(node.content);
-        return '';
-      })
-      .join(' ');
+  const extractFromNode = (node: TipTapNode): string => {
+    if (node.text) return node.text;
+    if (node.content && Array.isArray(node.content)) {
+      return node.content.map(extractFromNode).join(' ');
+    }
+    return '';
   };
 
-  const text = extractText(content.content).trim();
+  const text = content.content
+    .map(extractFromNode)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength).trim() + '...';
+  const truncated = text.slice(0, maxLength).trim();
+  return addEllipsis ? truncated + '...' : truncated;
 }
 
 /**

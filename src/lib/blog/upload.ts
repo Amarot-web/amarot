@@ -2,7 +2,7 @@
 
 export type ImageUploadType = 'cover' | 'content' | 'default';
 
-// Límites de tamaño (deben coincidir con el API)
+// Límites de tamaño por tipo de imagen
 export const IMAGE_SIZE_LIMITS = {
   cover: 200 * 1024,    // 200KB
   content: 2 * 1024 * 1024, // 2MB

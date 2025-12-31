@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { getAuthUser } from '@/lib/auth/permissions';
-
-// Límites de tamaño por tipo de imagen
-const SIZE_LIMITS = {
-  cover: 200 * 1024,    // 200KB para imágenes de portada
-  content: 2 * 1024 * 1024, // 2MB para imágenes del contenido
-  default: 10 * 1024 * 1024, // 10MB general
-};
+import { IMAGE_SIZE_LIMITS } from '@/lib/blog/upload';
 
 /**
  * Valida el tipo real del archivo usando magic bytes
@@ -73,7 +67,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Validar tamaño según tipo de imagen
-  const maxSize = SIZE_LIMITS[imageType as keyof typeof SIZE_LIMITS] || SIZE_LIMITS.default;
+  const maxSize = IMAGE_SIZE_LIMITS[imageType as keyof typeof IMAGE_SIZE_LIMITS] || IMAGE_SIZE_LIMITS.default;
   const maxSizeKB = Math.round(maxSize / 1024);
 
   if (file.size > maxSize) {
