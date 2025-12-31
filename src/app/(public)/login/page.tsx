@@ -8,7 +8,7 @@ import Image from 'next/image';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') || '/cotizador';
+  const redirectTo = searchParams.get('redirectTo') || '/panel/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,14 +46,14 @@ function LoginForm() {
       {/* Logo */}
       <div className="text-center mb-8">
         <Image
-          src="/images/logo.svg"
+          src="/images/logo.png"
           alt="AMAROT"
-          width={180}
-          height={60}
-          className="mx-auto mb-4"
+          width={220}
+          height={54}
+          className="mx-auto mb-6"
         />
         <h1 className="text-2xl font-bold text-[#1E3A8A]">
-          Sistema de Cotización
+          Sistema de Gestión
         </h1>
         <p className="text-gray-500 mt-2">
           Ingresa tus credenciales para continuar
@@ -142,15 +142,6 @@ function LoginForm() {
       {/* Footer */}
       <div className="mt-8 text-center text-sm text-gray-500">
         <p>Sistema interno de AMAROT Perú</p>
-        <p className="mt-1">
-          ¿Problemas para acceder?{' '}
-          <a
-            href="mailto:amarot.servicios@gmail.com"
-            className="text-[#1E3A8A] hover:underline"
-          >
-            Contactar soporte
-          </a>
-        </p>
       </div>
     </div>
   );

@@ -79,7 +79,7 @@ export default function NosotrosPage() {
             backgroundImage: "url('/images/nosotros-hero.jpg')",
           }}
         />
-        <div className="absolute inset-0 page-header-overlay" />
+        <div className="absolute inset-0 bg-[#1E3A8A]/70" />
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center">
             NOSOTROS
