@@ -1,5 +1,4 @@
 // Queries para el Blog de AMAROT
-// Adaptado de tonior.xyz
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import type {
@@ -12,6 +11,18 @@ import type {
   TipTapContent,
 } from '@/types/blog';
 
+/**
+ * Sanitiza input de búsqueda para prevenir inyección en queries
+ * Escapa caracteres especiales de PostgREST
+ */
+function sanitizeSearchInput(input: string): string {
+  return input
+    .replace(/[%_\\]/g, '\\$&') // Escapar wildcards de LIKE
+    .replace(/[(),.'":]/g, '') // Remover caracteres peligrosos para PostgREST
+    .trim()
+    .slice(0, 100); // Limitar longitud
+}
+
 // ========================================
 // POSTS - Público
 // ========================================
@@ -23,7 +34,7 @@ export async function getPublishedPosts(
   options: BlogPostQueryOptions = {}
 ): Promise<BlogPostsResponse> {
   const supabase = await createClient();
-  const { page = 1, limit = 10, search, tagSlug } = options;
+  const { page = 1, limit = 10, search } = options;
   const offset = (page - 1) * limit;
 
   let query = supabase
@@ -44,15 +55,18 @@ export async function getPublishedPosts(
     .range(offset, offset + limit - 1);
 
   if (search) {
-    query = query.or(
-      `title.ilike.%${search}%,excerpt.ilike.%${search}%`
-    );
+    const sanitized = sanitizeSearchInput(search);
+    if (sanitized) {
+      query = query.or(
+        `title.ilike.%${sanitized}%,excerpt.ilike.%${sanitized}%`
+      );
+    }
   }
 
   const { data, count, error } = await query;
 
   if (error) {
-    console.error('Error fetching posts:', error);
+    console.error('[getPublishedPosts] Error:', error.code);
     return { posts: [], total: 0, page, limit, totalPages: 0 };
   }
 
@@ -265,13 +279,16 @@ export async function getAdminPosts(
   }
 
   if (search) {
-    query = query.or(`title.ilike.%${search}%`);
+    const sanitized = sanitizeSearchInput(search);
+    if (sanitized) {
+      query = query.or(`title.ilike.%${sanitized}%`);
+    }
   }
 
   const { data, count, error } = await query;
 
   if (error) {
-    console.error('Error fetching admin posts:', error);
+    console.error('[getAdminPosts] Error:', error.code);
     return { posts: [], total: 0, page, limit, totalPages: 0 };
   }
 

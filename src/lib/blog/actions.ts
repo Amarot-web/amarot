@@ -84,6 +84,11 @@ export async function updatePost(
   id: string,
   formData: Partial<BlogPostFormData>
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
 
   const updateData: Record<string, unknown> = {
@@ -149,6 +154,11 @@ export async function updatePost(
 export async function deletePost(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from('blog_posts').delete().eq('id', id);
@@ -172,6 +182,11 @@ export async function updatePostStatus(
   status: PostStatus,
   publishAt?: string
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
 
   const updateData: Record<string, unknown> = {
@@ -211,6 +226,11 @@ export async function updatePostStatus(
 export async function createTag(
   formData: BlogTagFormData
 ): Promise<{ success: boolean; id?: string; slug?: string; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
   const slug = formData.slug || generateSlug(formData.name);
 
@@ -243,6 +263,11 @@ export async function updateTag(
   id: string,
   formData: Partial<BlogTagFormData>
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
 
   const updateData: Record<string, unknown> = {};
@@ -276,6 +301,11 @@ export async function updateTag(
 export async function deleteTag(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autenticado' };
+  }
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from('blog_tags').delete().eq('id', id);

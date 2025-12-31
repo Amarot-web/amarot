@@ -4,6 +4,9 @@ import { getAuthUser } from '@/lib/auth/permissions';
 import { generateSlug } from '@/types/blog';
 import { revalidatePath } from 'next/cache';
 
+// Regex para validar UUID v4
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /**
  * PATCH /api/blog/posts/[id] - Actualizar post existente
  * Usa JSON.parse manual para preservar attrs anidados de TipTap
@@ -18,6 +21,11 @@ export async function PATCH(
   }
 
   const { id } = await params;
+
+  // Validar que el ID sea un UUID válido
+  if (!UUID_REGEX.test(id)) {
+    return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
+  }
 
   try {
     // Parsear body manualmente para preservar attrs anidados de TipTap
@@ -70,14 +78,17 @@ export async function PATCH(
       .eq('id', id);
 
     if (error) {
-      console.error('[API Posts Update] Error:', error);
+      console.error('[API Posts Update] Error:', error.code, error.message);
       if (error.code === '23505') {
         return NextResponse.json(
           { error: 'Ya existe un post con ese slug' },
           { status: 400 }
         );
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Error al actualizar el post' },
+        { status: 500 }
+      );
     }
 
     // Actualizar tags si se proporcionan

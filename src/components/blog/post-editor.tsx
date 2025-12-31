@@ -69,9 +69,14 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(
     post?.tags?.map((t) => t.id) || []
   )
-  const [publishAt, setPublishAt] = useState(
-    post?.publishAt ? new Date(post.publishAt).toISOString().slice(0, 16) : ""
-  )
+  // Convertir UTC a hora local para el input datetime-local
+  const [publishAt, setPublishAt] = useState(() => {
+    if (!post?.publishAt) return ""
+    const date = new Date(post.publishAt)
+    // Ajustar a zona horaria local para el input
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    return localDate.toISOString().slice(0, 16)
+  })
 
   // Form state - SEO
   const [metaTitle, setMetaTitle] = useState(post?.metaTitle || "")
@@ -308,7 +313,6 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
   // Requerimos al menos 200 caracteres de contenido para que el agente sea útil
   const contentText = extractTextFromTipTap(content as TipTapContent, 3000)
   const hasEnoughContent = contentText.length >= 200
-  const hasTitle = title.trim().length > 0
 
   return (
     <div className="max-w-4xl mx-auto relative">
