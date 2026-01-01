@@ -8,6 +8,7 @@ import { generateSlug, extractTextFromTipTap } from "@/types/blog"
 import { BlogEditor, type JSONContent } from "./editor"
 import { createPost, updatePostStatus, createTag } from "@/lib/blog/actions"
 import { Save, Send, Eye, Clock, FileText, Settings, Search, X, Plus } from "lucide-react"
+import { toast } from "sonner"
 import { BlogAgent } from "./agents/blog-agent"
 import { CoverImageUploader } from "./cover-image-uploader"
 
@@ -78,7 +79,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
 
   async function handleSave(asDraft = true) {
     if (!title.trim()) {
-      alert("El título es obligatorio")
+      toast.error("El título es obligatorio")
       return
     }
 
@@ -112,7 +113,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
         const result = await response.json()
 
         if (!response.ok || !result.success) {
-          alert(result.error || "Error al guardar")
+          toast.error(result.error || "Error al guardar")
           return
         }
 
@@ -136,7 +137,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
         })
 
         if (!result.success) {
-          alert(result.error || "Error al crear")
+          toast.error(result.error || "Error al crear")
           return
         }
 
@@ -182,7 +183,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
       const saveResult = await response.json()
 
       if (!response.ok || !saveResult.success) {
-        alert(saveResult.error || "Error al guardar")
+        toast.error(saveResult.error || "Error al guardar")
         return
       }
 
@@ -194,7 +195,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
       )
 
       if (!statusResult.success) {
-        alert(statusResult.error || "Error al publicar")
+        toast.error(statusResult.error || "Error al publicar")
         return
       }
 
@@ -210,7 +211,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
     const result = await updatePostStatus(post.id, "draft")
 
     if (!result.success) {
-      alert(result.error || "Error al despublicar")
+      toast.error(result.error || "Error al despublicar")
       return
     }
 
@@ -234,7 +235,7 @@ export function PostEditor({ post, allTags: initialTags }: PostEditorProps) {
         setSelectedTags((prev) => [...prev, result.id!])
         setNewTagName("")
       } else {
-        alert(result.error || "Error al crear tag")
+        toast.error(result.error || "Error al crear tag")
       }
     } finally {
       setCreatingTag(false)

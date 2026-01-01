@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { getAuthUser } from '@/lib/auth/permissions';
 import { IMAGE_SIZE_LIMITS } from '@/lib/blog/upload';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * Valida el tipo real del archivo usando magic bytes
@@ -45,6 +46,19 @@ export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+  }
+
+  // Rate limiting por usuario
+  const rateLimit = checkRateLimit({
+    identifier: user.id,
+    ...RATE_LIMITS.upload,
+  });
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: `Límite excedido. Intenta en ${rateLimit.resetIn}s` },
+      { status: 429 }
+    );
   }
 
   const formData = await request.formData();

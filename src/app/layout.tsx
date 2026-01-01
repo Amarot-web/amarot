@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Open_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
@@ -41,6 +42,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${barlowCondensed.variable} ${openSans.variable} antialiased`}>
         {children}
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { deletePost, updatePostStatus } from '@/lib/blog/actions';
 import type { PostStatus } from '@/types/blog';
 
@@ -21,7 +22,7 @@ export default function BlogPostActions({ postId, status }: Props) {
     if (result.success) {
       router.refresh();
     } else {
-      alert(result.error || 'Error al cambiar estado');
+      toast.error(result.error || 'Error al cambiar estado');
     }
     setLoading(false);
     setShowMenu(false);
@@ -36,7 +37,7 @@ export default function BlogPostActions({ postId, status }: Props) {
     if (result.success) {
       router.refresh();
     } else {
-      alert(result.error || 'Error al eliminar');
+      toast.error(result.error || 'Error al eliminar');
     }
     setLoading(false);
     setShowMenu(false);

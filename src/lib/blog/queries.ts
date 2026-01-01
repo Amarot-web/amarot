@@ -166,44 +166,46 @@ export async function getPostsByTag(
 
 /**
  * Obtiene posts anterior y siguiente
+ * @param publishAt - Fecha de publicación del post actual (evita consulta extra)
  */
 export async function getAdjacentPosts(
-  currentSlug: string
+  publishAt: Date | null
 ): Promise<{
   prev: { title: string; slug: string } | null;
   next: { title: string; slug: string } | null;
 }> {
+  if (!publishAt) return { prev: null, next: null };
+
   const supabase = await createClient();
+  const publishAtISO = publishAt.toISOString();
+  const now = new Date().toISOString();
 
-  const { data: current } = await supabase
-    .from('blog_posts')
-    .select('publish_at')
-    .eq('slug', currentSlug)
-    .single();
+  // Ejecutar ambas consultas en paralelo
+  const [prevResult, nextResult] = await Promise.all([
+    supabase
+      .from('blog_posts')
+      .select('title, slug')
+      .eq('status', 'published')
+      .lte('publish_at', now)
+      .lt('publish_at', publishAtISO)
+      .order('publish_at', { ascending: false })
+      .limit(1)
+      .single(),
+    supabase
+      .from('blog_posts')
+      .select('title, slug')
+      .eq('status', 'published')
+      .lte('publish_at', now)
+      .gt('publish_at', publishAtISO)
+      .order('publish_at', { ascending: true })
+      .limit(1)
+      .single(),
+  ]);
 
-  if (!current) return { prev: null, next: null };
-
-  const { data: prev } = await supabase
-    .from('blog_posts')
-    .select('title, slug')
-    .eq('status', 'published')
-    .lte('publish_at', new Date().toISOString())
-    .lt('publish_at', current.publish_at)
-    .order('publish_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  const { data: next } = await supabase
-    .from('blog_posts')
-    .select('title, slug')
-    .eq('status', 'published')
-    .lte('publish_at', new Date().toISOString())
-    .gt('publish_at', current.publish_at)
-    .order('publish_at', { ascending: true })
-    .limit(1)
-    .single();
-
-  return { prev: prev || null, next: next || null };
+  return {
+    prev: prevResult.data || null,
+    next: nextResult.data || null,
+  };
 }
 
 // ========================================

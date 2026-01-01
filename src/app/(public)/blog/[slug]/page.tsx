@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  const adjacentPosts = await getAdjacentPosts(slug);
+  const adjacentPosts = await getAdjacentPosts(post.publishAt);
 
   // Format date
   const publishDate = post.publishAt

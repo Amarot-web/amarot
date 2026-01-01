@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getAuthUser } from '@/lib/auth/permissions';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -40,6 +41,19 @@ export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
+  // Rate limiting por usuario
+  const rateLimit = checkRateLimit({
+    identifier: user.id,
+    ...RATE_LIMITS.generateSeo,
+  });
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: `Límite excedido. Intenta en ${rateLimit.resetIn}s` },
+      { status: 429 }
+    );
   }
 
   // Verificar que la API key esté configurada

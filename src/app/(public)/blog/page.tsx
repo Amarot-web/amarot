@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { getPublishedPosts, getTags } from "@/lib/blog/queries";
+import { getPublishedPosts, getPostsByTag, getTags } from "@/lib/blog/queries";
 import AnimatedSection from "@/components/AnimatedSection";
 
 export const metadata: Metadata = {
@@ -22,13 +22,15 @@ export default async function BlogPage({ searchParams }: Props) {
   const currentPage = Number(params.page) || 1;
   const tagFilter = params.tag;
 
-  const { posts, totalPages, total } = await getPublishedPosts({
-    page: currentPage,
-    limit: 9,
-    tagSlug: tagFilter,
-  });
+  // Ejecutar consultas en paralelo y usar función correcta según filtro
+  const [postsData, tags] = await Promise.all([
+    tagFilter
+      ? getPostsByTag(tagFilter, { page: currentPage, limit: 9 })
+      : getPublishedPosts({ page: currentPage, limit: 9 }),
+    getTags(),
+  ]);
 
-  const tags = await getTags();
+  const { posts, totalPages, total } = postsData;
 
   return (
     <>

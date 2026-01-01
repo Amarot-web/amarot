@@ -20,6 +20,7 @@ import {
   Redo,
   Code2,
 } from "lucide-react"
+import { toast } from "sonner"
 import { uploadBlogImage } from "@/lib/blog/upload"
 
 interface ToolbarProps {
@@ -37,7 +38,7 @@ export function Toolbar({ editor }: ToolbarProps) {
 
       // Validar tamaño (10MB max)
       if (file.size > 10 * 1024 * 1024) {
-        alert("La imagen no puede ser mayor a 10MB")
+        toast.error("La imagen no puede ser mayor a 10MB")
         return
       }
 
@@ -46,7 +47,7 @@ export function Toolbar({ editor }: ToolbarProps) {
         editor.chain().focus().setImage({ src: url, alt: "uploaded image", title: "" }).run()
       } catch (error) {
         console.error("Error uploading image:", error)
-        alert("Error al subir la imagen: " + (error as Error).message)
+        toast.error("Error al subir la imagen: " + (error as Error).message)
       }
     }
     input.click()
