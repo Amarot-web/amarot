@@ -1,3 +1,8 @@
+export interface FAQ {
+  question: string;
+  answer: string;
+}
+
 export interface ServiceData {
   slug: string;
   title: string;
@@ -20,6 +25,7 @@ export interface ServiceData {
   whyAmarot: string[];
   cta: string;
   priority: 'core' | 'complementary';
+  faqs?: FAQ[];
 }
 
 export const services: ServiceData[] = [
@@ -66,7 +72,29 @@ export const services: ServiceData[] = [
       'Enfoque en seguridad, control y eficiencia en obra'
     ],
     cta: 'Si tu proyecto requiere perforaciones diamantinas en concreto, en AMAROT PERÚ SAC te ayudamos a definir el método y equipo adecuado para que la obra avance sin riesgos ni retrasos.',
-    priority: 'core'
+    priority: 'core',
+    faqs: [
+      {
+        question: '¿Qué diámetros de perforación diamantina pueden realizar?',
+        answer: 'Realizamos perforaciones desde 25mm hasta 500mm de diámetro, dependiendo del equipo utilizado. Para diámetros mayores o requerimientos especiales, contáctanos para evaluar tu proyecto.'
+      },
+      {
+        question: '¿Se puede perforar concreto armado con mucho fierro?',
+        answer: 'Sí, la perforación diamantina es ideal para concreto armado altamente reforzado. Las coronas diamantadas cortan tanto el concreto como el acero de refuerzo sin problema, manteniendo la precisión del corte.'
+      },
+      {
+        question: '¿Cuánto tiempo toma una perforación diamantina?',
+        answer: 'El tiempo depende del diámetro, espesor del elemento y densidad del refuerzo. Una perforación típica de 100mm en una losa de 20cm puede tomar entre 10 y 30 minutos. Evaluamos cada caso para darte un estimado preciso.'
+      },
+      {
+        question: '¿Es necesario usar agua durante la perforación?',
+        answer: 'Sí, la mayoría de perforaciones diamantinas requieren agua para refrigerar la corona y evacuar el polvo. Contamos con sistemas de recolección de agua para trabajos en interiores o áreas sensibles.'
+      },
+      {
+        question: '¿Trabajan en edificios ocupados o en funcionamiento?',
+        answer: 'Sí, la perforación diamantina genera mínima vibración y ruido controlado, lo que permite trabajar en hospitales, oficinas, centros comerciales y edificios residenciales ocupados.'
+      }
+    ]
   },
   {
     slug: 'anclajes-quimicos',
@@ -113,7 +141,29 @@ export const services: ServiceData[] = [
       'Enfoque en seguridad y precisión en obra'
     ],
     cta: 'Si tu proyecto requiere aplicación de anclajes químicos en concreto, en AMAROT PERÚ SAC te asesoramos para definir el tipo de anclaje y procedimiento adecuado según las condiciones reales de tu obra.',
-    priority: 'core'
+    priority: 'core',
+    faqs: [
+      {
+        question: '¿Qué diferencia hay entre un anclaje químico y uno mecánico?',
+        answer: 'El anclaje químico utiliza un adhesivo que rellena completamente el orificio, distribuyendo la carga de manera uniforme. El anclaje mecánico se expande contra las paredes del orificio. El químico ofrece mayor capacidad de carga y es ideal para concreto fisurado o cercano a bordes.'
+      },
+      {
+        question: '¿Cuánto tiempo tarda en curar el anclaje químico?',
+        answer: 'El tiempo de curado depende del producto y la temperatura ambiente. Con Hilti RE 500, el curado típico es de 20-45 minutos a temperatura ambiente. En condiciones frías puede tomar más tiempo. Siempre respetamos los tiempos de curado antes de aplicar carga.'
+      },
+      {
+        question: '¿Se puede instalar anclajes químicos en concreto húmedo?',
+        answer: 'Sí, existen adhesivos químicos especiales para instalación en orificios húmedos o incluso sumergidos. Hilti ofrece productos específicos para estas condiciones. Es importante usar el producto correcto según el ambiente.'
+      },
+      {
+        question: '¿Qué diámetros de varilla pueden anclar?',
+        answer: 'Instalamos varillas desde 8mm hasta 40mm de diámetro, dependiendo del proyecto. Para diámetros mayores o aplicaciones especiales, realizamos una evaluación técnica previa.'
+      },
+      {
+        question: '¿Cómo se verifica que el anclaje está bien instalado?',
+        answer: 'Realizamos control de calidad visual y, cuando el proyecto lo requiere, ejecutamos pruebas de arranque (pull out test) para verificar que el anclaje alcanza la carga de diseño especificada.'
+      }
+    ]
   },
   {
     slug: 'deteccion-metales',
@@ -209,7 +259,29 @@ export const services: ServiceData[] = [
       'Enfoque profesional y orientado a obra real'
     ],
     cta: 'Si tu proyecto requiere pruebas de anclaje o pull out test, en AMAROT PERÚ SAC te brindamos resultados confiables y documentados, garantizando la seguridad y desempeño de tus fijaciones.',
-    priority: 'complementary'
+    priority: 'complementary',
+    faqs: [
+      {
+        question: '¿Qué es exactamente una prueba de anclaje o pull out test?',
+        answer: 'El pull out test es un ensayo no destructivo que aplica una fuerza de tracción controlada sobre un anclaje instalado para verificar su capacidad de carga. Se mide la resistencia real del anclaje en las condiciones de obra, comparándola con la carga de diseño especificada.'
+      },
+      {
+        question: '¿Cuándo se requiere realizar pruebas de anclaje?',
+        answer: 'Se recomienda realizar pull out test cuando el proyecto lo especifica, en anclajes de seguridad crítica (barandas, líneas de vida, estructuras metálicas), para control de calidad en instalaciones masivas, o cuando la supervisión o auditoría lo requiere para validar la instalación.'
+      },
+      {
+        question: '¿Qué rango de cargas pueden medir los equipos?',
+        answer: 'Con los equipos HILTI HAT 28 y HAT 30 podemos aplicar cargas desde 5 kN hasta 30 kN (aproximadamente 500 kg a 3000 kg de fuerza). Para ensayos de mayor capacidad, evaluamos alternativas según el proyecto.'
+      },
+      {
+        question: '¿El pull out test daña el anclaje ensayado?',
+        answer: 'No necesariamente. Si la prueba se realiza hasta la carga de servicio o prueba (generalmente un porcentaje de la carga última), el anclaje queda funcional. Solo si se lleva hasta la rotura, el anclaje queda inutilizado. La mayoría de pruebas de verificación son no destructivas.'
+      },
+      {
+        question: '¿Cuántos anclajes se deben ensayar por proyecto?',
+        answer: 'Depende de las especificaciones del proyecto y la normativa aplicable. Típicamente se ensaya entre el 5% y 10% de los anclajes instalados, o un mínimo de 3 por lote. Siempre seguimos los criterios definidos por el ingeniero estructural o la supervisión.'
+      }
+    ]
   },
   {
     slug: 'sellos-cortafuego',

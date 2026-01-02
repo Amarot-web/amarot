@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AnimatedSection from '@/components/AnimatedSection';
+import ServiceFAQ from '@/components/ServiceFAQ';
 import { services, getServiceBySlug, getAllServiceSlugs } from '../data/services';
 
 interface Props {
@@ -251,6 +252,13 @@ export default async function ServicePage({ params }: Props) {
                   </div>
                 </div>
               </AnimatedSection>
+
+              {/* FAQs Section - Only if service has FAQs */}
+              {service.faqs && service.faqs.length > 0 && (
+                <AnimatedSection animation="fade-up" delay={600}>
+                  <ServiceFAQ faqs={service.faqs} serviceName={service.shortTitle} />
+                </AnimatedSection>
+              )}
             </div>
 
             {/* Sidebar - 30% */}
