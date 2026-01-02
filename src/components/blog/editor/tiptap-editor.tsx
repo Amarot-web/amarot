@@ -6,6 +6,10 @@ import Image from "@tiptap/extension-image"
 import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import Underline from "@tiptap/extension-underline"
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableCell } from "@tiptap/extension-table-cell"
 import { useEffect, useRef } from "react"
 import { Toolbar } from "./toolbar"
 
@@ -55,6 +59,23 @@ export function TiptapEditor({
         placeholder: "Escribe el contenido del post...",
       }),
       Underline,
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "border-collapse border border-gray-300 w-full my-4",
+        },
+      }),
+      TableRow,
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: "border border-gray-300 bg-gray-100 px-4 py-2 font-semibold text-left",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "border border-gray-300 px-4 py-2",
+        },
+      }),
     ],
     content: initialContent,
     immediatelyRender: false,

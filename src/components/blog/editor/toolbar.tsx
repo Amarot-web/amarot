@@ -19,6 +19,9 @@ import {
   Undo,
   Redo,
   Code2,
+  Table2,
+  Trash2,
+  Plus,
 } from "lucide-react"
 import { toast } from "sonner"
 import { uploadBlogImage } from "@/lib/blog/upload"
@@ -234,6 +237,40 @@ export function Toolbar({ editor }: ToolbarProps) {
       <ToolbarButton onClick={handleImageUpload} title="Subir imagen">
         <ImageIcon size={16} />
       </ToolbarButton>
+
+      <Separator />
+
+      {/* Table */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        title="Insertar tabla"
+      >
+        <Table2 size={16} />
+      </ToolbarButton>
+      {editor.isActive("table") && (
+        <>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            title="Agregar fila"
+          >
+            <Plus size={14} />
+            <span className="text-[10px] ml-0.5">F</span>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+            title="Agregar columna"
+          >
+            <Plus size={14} />
+            <span className="text-[10px] ml-0.5">C</span>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            title="Eliminar tabla"
+          >
+            <Trash2 size={16} />
+          </ToolbarButton>
+        </>
+      )}
     </div>
   )
 }

@@ -155,6 +155,46 @@ function RenderNode({ node }: { node: TipTapNode }) {
     case 'text':
       return <RenderText text={node.text || ''} marks={node.marks} />;
 
+    case 'table':
+      return (
+        <div className="overflow-x-auto my-6">
+          <table>
+            <tbody>
+              {node.content?.map((child, i) => (
+                <RenderNode key={i} node={child} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+
+    case 'tableRow':
+      return (
+        <tr>
+          {node.content?.map((child, i) => (
+            <RenderNode key={i} node={child} />
+          ))}
+        </tr>
+      );
+
+    case 'tableHeader':
+      return (
+        <th>
+          {node.content?.map((child, i) => (
+            <RenderNode key={i} node={child} />
+          ))}
+        </th>
+      );
+
+    case 'tableCell':
+      return (
+        <td>
+          {node.content?.map((child, i) => (
+            <RenderNode key={i} node={child} />
+          ))}
+        </td>
+      );
+
     default:
       // Si no reconocemos el nodo, intentamos renderizar sus hijos
       if (node.content) {
