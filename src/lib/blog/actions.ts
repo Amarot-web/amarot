@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { getAuthUser } from '@/lib/auth/permissions';
 import type { BlogPostFormData, BlogTagFormData, PostStatus, TipTapContent } from '@/types/blog';
 import { generateSlug } from '@/types/blog';
+import { preparePostUpdateData, updatePostTags } from './helpers';
 
 // ========================================
 // POSTS - Admin Actions
@@ -91,27 +92,11 @@ export async function updatePost(
 
   const supabase = createAdminClient();
 
-  const updateData: Record<string, unknown> = {
-    updated_at: new Date().toISOString(),
-  };
-
-  if (formData.title !== undefined) {
-    updateData.title = formData.title;
-    if (!formData.slug) {
-      updateData.slug = generateSlug(formData.title);
-    }
-  }
-  if (formData.slug !== undefined) updateData.slug = formData.slug;
-  if (formData.excerpt !== undefined) updateData.excerpt = formData.excerpt || null;
-  if (formData.content !== undefined) updateData.content = formData.content || null;
-  if (formData.featuredImage !== undefined) updateData.featured_image = formData.featuredImage || null;
-  if (formData.status !== undefined) updateData.status = formData.status;
-  if (formData.publishAt !== undefined) updateData.publish_at = formData.publishAt?.toISOString() || null;
-  if (formData.metaTitle !== undefined) updateData.meta_title = formData.metaTitle || null;
-  if (formData.metaDescription !== undefined) updateData.meta_description = formData.metaDescription || null;
-  if (formData.ogImageUrl !== undefined) updateData.og_image_url = formData.ogImageUrl || null;
-  if (formData.canonicalUrl !== undefined) updateData.canonical_url = formData.canonicalUrl || null;
-  if (formData.noindex !== undefined) updateData.noindex = formData.noindex;
+  // Preparar datos usando helper centralizado
+  const updateData = preparePostUpdateData({
+    ...formData,
+    publishAt: formData.publishAt ?? undefined,
+  });
 
   const { error } = await supabase
     .from('blog_posts')
@@ -123,23 +108,12 @@ export async function updatePost(
     if (error.code === '23505') {
       return { success: false, error: 'Ya existe un post con ese slug' };
     }
-    return { success: false, error: error.message };
+    return { success: false, error: 'Error al actualizar el post' };
   }
 
   // Actualizar tags si se proporcionan
   if (formData.tagIds !== undefined) {
-    // Eliminar tags actuales
-    await supabase.from('blog_post_tags').delete().eq('post_id', id);
-
-    // Insertar nuevos tags
-    if (formData.tagIds.length > 0) {
-      await supabase.from('blog_post_tags').insert(
-        formData.tagIds.map((tagId) => ({
-          post_id: id,
-          tag_id: tagId,
-        }))
-      );
-    }
+    await updatePostTags(supabase, id, formData.tagIds);
   }
 
   revalidatePath('/panel/blog');

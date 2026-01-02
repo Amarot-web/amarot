@@ -27,6 +27,30 @@ interface ToolbarProps {
   editor: Editor
 }
 
+/**
+ * Valida que una URL sea segura (no javascript:, data:, etc.)
+ */
+function isValidUrl(url: string): boolean {
+  const trimmed = url.trim().toLowerCase();
+  // Permitir: http://, https://, rutas relativas (/), anclas (#), mailto:, tel:
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('#') ||
+    trimmed.startsWith('mailto:') ||
+    trimmed.startsWith('tel:')
+  ) {
+    return true;
+  }
+  // Rechazar protocolos peligrosos
+  if (trimmed.includes(':')) {
+    return false;
+  }
+  // Permitir rutas relativas sin protocolo
+  return true;
+}
+
 export function Toolbar({ editor }: ToolbarProps) {
   const handleImageUpload = async () => {
     const input = document.createElement("input")
@@ -61,6 +85,12 @@ export function Toolbar({ editor }: ToolbarProps) {
 
     if (url === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run()
+      return
+    }
+
+    // Validar URL antes de insertar
+    if (!isValidUrl(url)) {
+      toast.error("URL no válida. Usa http://, https://, o rutas relativas")
       return
     }
 

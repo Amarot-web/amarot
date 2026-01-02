@@ -63,19 +63,6 @@ export interface BlogPost {
   tags?: BlogTag[];
 }
 
-// ==================== BLOG MEDIA ====================
-
-export interface BlogMedia {
-  id: string;
-  filename: string;
-  url: string;
-  altText: string | null;
-  sizeBytes: number | null;
-  mimeType: string | null;
-  uploadedBy: string | null;
-  createdAt: Date;
-}
-
 // ==================== TIPOS DE DATABASE (SUPABASE) ====================
 
 export interface DbBlogTag {
@@ -108,17 +95,6 @@ export interface DbBlogPostTag {
   id: string;
   post_id: string;
   tag_id: string;
-}
-
-export interface DbBlogMedia {
-  id: string;
-  filename: string;
-  url: string;
-  alt_text: string | null;
-  size_bytes: number | null;
-  mime_type: string | null;
-  uploaded_by: string | null;
-  created_at: string;
 }
 
 // ==================== FORM TYPES ====================

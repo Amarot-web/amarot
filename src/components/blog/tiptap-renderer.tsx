@@ -4,6 +4,36 @@
 import React from 'react';
 import type { TipTapContent, TipTapNode, TipTapMark } from '@/types/blog';
 
+/**
+ * Sanitiza una URL para prevenir XSS (javascript:, data:, etc.)
+ * Retorna la URL si es segura, o undefined si no lo es
+ */
+function sanitizeUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+
+  const trimmed = url.trim().toLowerCase();
+
+  // Permitir protocolos seguros
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('#') ||
+    trimmed.startsWith('mailto:') ||
+    trimmed.startsWith('tel:')
+  ) {
+    return url;
+  }
+
+  // Rechazar cualquier URL con protocolo (javascript:, data:, vbscript:, etc.)
+  if (trimmed.includes(':')) {
+    return undefined;
+  }
+
+  // Permitir rutas relativas
+  return url;
+}
+
 interface TipTapRendererProps {
   content: TipTapContent | null;
   className?: string;
@@ -97,10 +127,12 @@ function RenderNode({ node }: { node: TipTapNode }) {
 
     case 'image': {
       const imgTitle = node.attrs?.title as string | undefined;
+      const imgSrc = sanitizeUrl(node.attrs?.src as string);
+      if (!imgSrc) return null; // No renderizar imágenes con URLs peligrosas
       return (
         <figure className="my-8">
           <img
-            src={node.attrs?.src as string}
+            src={imgSrc}
             alt={(node.attrs?.alt as string) || ''}
             title={imgTitle}
             className="rounded-lg w-full"
@@ -175,10 +207,12 @@ function applyMark(content: React.ReactNode, mark: TipTapMark): React.ReactNode 
         </code>
       );
 
-    case 'link':
+    case 'link': {
+      const href = sanitizeUrl(mark.attrs?.href as string);
+      if (!href) return <>{content}</>; // No crear enlace si URL es peligrosa
       return (
         <a
-          href={mark.attrs?.href as string}
+          href={href}
           target={mark.attrs?.target as string}
           rel={mark.attrs?.target === '_blank' ? 'noopener noreferrer' : undefined}
           className="text-[#1E3A8A] hover:text-[#DC2626] underline transition-colors"
@@ -186,6 +220,7 @@ function applyMark(content: React.ReactNode, mark: TipTapMark): React.ReactNode 
           {content}
         </a>
       );
+    }
 
     case 'highlight':
       return (
