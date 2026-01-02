@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Rutas administrativas
+Disallow: /panel/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://amarot.pe/sitemap.xml

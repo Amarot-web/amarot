@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Montserrat, Open_Sans } from "next/font/google";
+import { Barlow_Condensed, Open_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
 
-const montserrat = Montserrat({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  variable: "--font-montserrat",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-heading",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-opensans",
-  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -42,13 +40,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${montserrat.variable} ${openSans.variable} antialiased`}>
-        <Header />
-        <main className="pt-20">
-          {children}
-        </main>
-        <Footer />
-        <WhatsAppButton />
+      <body className={`${barlowCondensed.variable} ${openSans.variable} antialiased`}>
+        {children}
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );
