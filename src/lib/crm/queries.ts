@@ -17,7 +17,15 @@ import type {
   DbLeadNote,
   ClientBasic,
   AlertSetting,
+  CRMMetrics,
+  LeadsByPeriod,
+  LeadsBySource,
+  LeadsByService,
+  UserPerformance,
+  LeadSource,
+  ServiceType,
 } from './types';
+import { LEAD_SOURCE_LABELS, SERVICE_TYPE_LABELS } from './types';
 
 /**
  * Sanitiza input de búsqueda para prevenir inyección en queries
@@ -1019,5 +1027,476 @@ export async function getAlertSettingByKey(
         updated_at: data.updated_at,
       }
     : null;
+}
+
+// ========================================
+// MÉTRICAS CRM
+// ========================================
+
+/**
+ * Obtiene las métricas principales del CRM para un período
+ */
+export async function getCRMMetrics(
+  dateFrom: Date,
+  dateTo: Date
+): Promise<CRMMetrics> {
+  const supabase = createAdminClient();
+
+  // Calcular período anterior para comparación
+  const periodLength = dateTo.getTime() - dateFrom.getTime();
+  const prevDateTo = new Date(dateFrom.getTime() - 1);
+  const prevDateFrom = new Date(prevDateTo.getTime() - periodLength);
+
+  // Obtener etapas ganadas/perdidas
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won, is_lost');
+
+  const wonStageIds = (stagesData || []).filter((s) => s.is_won).map((s) => s.id);
+  const lostStageIds = (stagesData || []).filter((s) => s.is_lost).map((s) => s.id);
+  const closedStageIds = [...wonStageIds, ...lostStageIds];
+
+  // Período actual: leads creados
+  const { data: currentLeads } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .gte('created_at', dateFrom.toISOString())
+    .lte('created_at', dateTo.toISOString());
+
+  // Período anterior: leads creados
+  const { data: prevLeads } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .gte('created_at', prevDateFrom.toISOString())
+    .lte('created_at', prevDateTo.toISOString());
+
+  // Leads cerrados en período actual (para conversión y ciclo)
+  const { data: closedCurrent } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .gte('date_closed', dateFrom.toISOString())
+    .lte('date_closed', dateTo.toISOString())
+    .in('stage_id', closedStageIds);
+
+  // Leads cerrados en período anterior
+  const { data: closedPrev } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .gte('date_closed', prevDateFrom.toISOString())
+    .lte('date_closed', prevDateTo.toISOString())
+    .in('stage_id', closedStageIds);
+
+  // Leads activos (no cerrados) - para pipeline value
+  const { data: activeLeads } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, probability')
+    .not('stage_id', 'in', `(${closedStageIds.join(',')})`);
+
+  // Calcular métricas período actual
+  const totalLeads = currentLeads?.length || 0;
+  const wonCurrent = (closedCurrent || []).filter((l) => wonStageIds.includes(l.stage_id));
+  const lostCurrent = (closedCurrent || []).filter((l) => lostStageIds.includes(l.stage_id));
+
+  const wonLeads = wonCurrent.length;
+  const lostLeads = lostCurrent.length;
+  const totalClosed = wonLeads + lostLeads;
+  const conversionRate = totalClosed > 0 ? (wonLeads / totalClosed) * 100 : 0;
+
+  const totalRevenueWon = wonCurrent.reduce((sum, l) => sum + (Number(l.expected_revenue) || 0), 0);
+  const avgTicket = wonLeads > 0 ? totalRevenueWon / wonLeads : 0;
+
+  // Ciclo de venta promedio (días desde creación hasta cierre para ganados)
+  let avgSalesCycle = 0;
+  if (wonCurrent.length > 0) {
+    const cycles = wonCurrent
+      .filter((l) => l.date_closed && l.created_at)
+      .map((l) => {
+        const created = new Date(l.created_at).getTime();
+        const closed = new Date(l.date_closed!).getTime();
+        return (closed - created) / (1000 * 60 * 60 * 24); // días
+      });
+    avgSalesCycle = cycles.length > 0 ? cycles.reduce((a, b) => a + b, 0) / cycles.length : 0;
+  }
+
+  // Valor del pipeline (leads activos × probabilidad)
+  const pipelineValue = (activeLeads || []).reduce(
+    (sum, l) => sum + (Number(l.expected_revenue) || 0) * ((l.probability || 0) / 100),
+    0
+  );
+
+  // Calcular métricas período anterior para comparación
+  const prevTotalLeads = prevLeads?.length || 0;
+  const wonPrev = (closedPrev || []).filter((l) => wonStageIds.includes(l.stage_id));
+  const lostPrev = (closedPrev || []).filter((l) => lostStageIds.includes(l.stage_id));
+  const prevTotalClosed = wonPrev.length + lostPrev.length;
+  const prevConversionRate = prevTotalClosed > 0 ? (wonPrev.length / prevTotalClosed) * 100 : 0;
+  const prevRevenueWon = wonPrev.reduce((sum, l) => sum + (Number(l.expected_revenue) || 0), 0);
+  const prevAvgTicket = wonPrev.length > 0 ? prevRevenueWon / wonPrev.length : 0;
+
+  let prevAvgCycle = 0;
+  if (wonPrev.length > 0) {
+    const cycles = wonPrev
+      .filter((l) => l.date_closed && l.created_at)
+      .map((l) => {
+        const created = new Date(l.created_at).getTime();
+        const closed = new Date(l.date_closed!).getTime();
+        return (closed - created) / (1000 * 60 * 60 * 24);
+      });
+    prevAvgCycle = cycles.length > 0 ? cycles.reduce((a, b) => a + b, 0) / cycles.length : 0;
+  }
+
+  // Calcular cambios porcentuales
+  const leadsChange = prevTotalLeads > 0 ? ((totalLeads - prevTotalLeads) / prevTotalLeads) * 100 : 0;
+  const conversionChange = prevConversionRate > 0 ? conversionRate - prevConversionRate : 0;
+  const ticketChange = prevAvgTicket > 0 ? ((avgTicket - prevAvgTicket) / prevAvgTicket) * 100 : 0;
+  const cycleChange = prevAvgCycle > 0 ? avgSalesCycle - prevAvgCycle : 0;
+
+  return {
+    totalLeads,
+    activeLeads: activeLeads?.length || 0,
+    wonLeads,
+    lostLeads,
+    conversionRate: Math.round(conversionRate * 10) / 10,
+    avgTicket: Math.round(avgTicket),
+    avgSalesCycle: Math.round(avgSalesCycle),
+    pipelineValue: Math.round(pipelineValue),
+    leadsChange: Math.round(leadsChange),
+    conversionChange: Math.round(conversionChange * 10) / 10,
+    ticketChange: Math.round(ticketChange),
+    cycleChange: Math.round(cycleChange),
+    pipelineChange: 0, // No calculamos cambio de pipeline histórico
+    periodStart: dateFrom,
+    periodEnd: dateTo,
+  };
+}
+
+/**
+ * Obtiene leads agrupados por período para gráfico temporal
+ */
+export async function getLeadsByPeriod(
+  groupBy: 'day' | 'week' | 'month',
+  dateFrom: Date,
+  dateTo: Date
+): Promise<LeadsByPeriod[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas ganadas/perdidas
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won, is_lost');
+
+  const wonStageIds = (stagesData || []).filter((s) => s.is_won).map((s) => s.id);
+  const lostStageIds = (stagesData || []).filter((s) => s.is_lost).map((s) => s.id);
+
+  // Obtener todos los leads en el rango
+  const { data: leads } = await supabase
+    .from('leads')
+    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .gte('created_at', dateFrom.toISOString())
+    .lte('created_at', dateTo.toISOString());
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  // Agrupar por período
+  const groups = new Map<string, { newLeads: number; wonLeads: number; lostLeads: number; revenue: number }>();
+
+  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+  for (const lead of leads) {
+    const created = new Date(lead.created_at);
+    let periodKey: string;
+    let periodLabel: string;
+
+    if (groupBy === 'day') {
+      periodKey = created.toISOString().slice(0, 10);
+      periodLabel = `${created.getDate()} ${monthNames[created.getMonth()]}`;
+    } else if (groupBy === 'week') {
+      // Calcular inicio de semana (lunes)
+      const day = created.getDay();
+      const diff = created.getDate() - day + (day === 0 ? -6 : 1);
+      const weekStart = new Date(created.setDate(diff));
+      periodKey = weekStart.toISOString().slice(0, 10);
+      periodLabel = `Sem ${periodKey.slice(8, 10)}/${periodKey.slice(5, 7)}`;
+    } else {
+      periodKey = created.toISOString().slice(0, 7);
+      periodLabel = `${monthNames[created.getMonth()]} ${created.getFullYear()}`;
+    }
+
+    if (!groups.has(periodKey)) {
+      groups.set(periodKey, { newLeads: 0, wonLeads: 0, lostLeads: 0, revenue: 0 });
+    }
+
+    const group = groups.get(periodKey)!;
+    group.newLeads++;
+
+    if (wonStageIds.includes(lead.stage_id)) {
+      group.wonLeads++;
+      group.revenue += Number(lead.expected_revenue) || 0;
+    } else if (lostStageIds.includes(lead.stage_id)) {
+      group.lostLeads++;
+    }
+  }
+
+  // Convertir a array ordenado
+  const result: LeadsByPeriod[] = Array.from(groups.entries())
+    .map(([period, data]) => {
+      const date = new Date(period);
+      let periodLabel: string;
+
+      if (groupBy === 'day') {
+        periodLabel = `${date.getDate()} ${monthNames[date.getMonth()]}`;
+      } else if (groupBy === 'week') {
+        periodLabel = `Sem ${period.slice(8, 10)}/${period.slice(5, 7)}`;
+      } else {
+        periodLabel = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      }
+
+      return {
+        period,
+        periodLabel,
+        ...data,
+      };
+    })
+    .sort((a, b) => a.period.localeCompare(b.period));
+
+  return result;
+}
+
+/**
+ * Obtiene leads agrupados por fuente
+ */
+export async function getLeadsBySource(
+  dateFrom?: Date,
+  dateTo?: Date
+): Promise<LeadsBySource[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas ganadas
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won');
+
+  const wonStageIds = (stagesData || []).filter((s) => s.is_won).map((s) => s.id);
+
+  // Query base
+  let query = supabase
+    .from('leads')
+    .select('id, source, expected_revenue, stage_id');
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom.toISOString());
+  }
+  if (dateTo) {
+    query = query.lte('created_at', dateTo.toISOString());
+  }
+
+  const { data: leads } = await query;
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  // Agrupar por fuente
+  const groups = new Map<LeadSource, { count: number; value: number; wonCount: number }>();
+
+  for (const lead of leads) {
+    const source = lead.source as LeadSource;
+    if (!groups.has(source)) {
+      groups.set(source, { count: 0, value: 0, wonCount: 0 });
+    }
+
+    const group = groups.get(source)!;
+    group.count++;
+    group.value += Number(lead.expected_revenue) || 0;
+
+    if (wonStageIds.includes(lead.stage_id)) {
+      group.wonCount++;
+    }
+  }
+
+  return Array.from(groups.entries()).map(([source, data]) => ({
+    source,
+    sourceLabel: LEAD_SOURCE_LABELS[source] || source,
+    count: data.count,
+    value: data.value,
+    wonCount: data.wonCount,
+    conversionRate: data.count > 0 ? Math.round((data.wonCount / data.count) * 100) : 0,
+  }));
+}
+
+/**
+ * Obtiene leads agrupados por tipo de servicio
+ */
+export async function getLeadsByService(
+  dateFrom?: Date,
+  dateTo?: Date
+): Promise<LeadsByService[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas ganadas
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won');
+
+  const wonStageIds = (stagesData || []).filter((s) => s.is_won).map((s) => s.id);
+
+  // Query base
+  let query = supabase
+    .from('leads')
+    .select('id, service_type, expected_revenue, stage_id');
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom.toISOString());
+  }
+  if (dateTo) {
+    query = query.lte('created_at', dateTo.toISOString());
+  }
+
+  const { data: leads } = await query;
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  // Agrupar por servicio
+  const groups = new Map<ServiceType, { count: number; value: number; wonCount: number }>();
+
+  for (const lead of leads) {
+    const serviceType = lead.service_type as ServiceType;
+    if (!groups.has(serviceType)) {
+      groups.set(serviceType, { count: 0, value: 0, wonCount: 0 });
+    }
+
+    const group = groups.get(serviceType)!;
+    group.count++;
+    group.value += Number(lead.expected_revenue) || 0;
+
+    if (wonStageIds.includes(lead.stage_id)) {
+      group.wonCount++;
+    }
+  }
+
+  return Array.from(groups.entries()).map(([serviceType, data]) => ({
+    serviceType,
+    serviceLabel: SERVICE_TYPE_LABELS[serviceType] || serviceType,
+    count: data.count,
+    value: data.value,
+    wonCount: data.wonCount,
+    conversionRate: data.count > 0 ? Math.round((data.wonCount / data.count) * 100) : 0,
+  }));
+}
+
+/**
+ * Obtiene rendimiento por vendedor
+ */
+export async function getUserPerformance(
+  dateFrom?: Date,
+  dateTo?: Date
+): Promise<UserPerformance[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won, is_lost');
+
+  const wonStageIds = (stagesData || []).filter((s) => s.is_won).map((s) => s.id);
+  const lostStageIds = (stagesData || []).filter((s) => s.is_lost).map((s) => s.id);
+  const closedStageIds = [...wonStageIds, ...lostStageIds];
+
+  // Query leads
+  let query = supabase
+    .from('leads')
+    .select('id, user_id, expected_revenue, stage_id, created_at, date_closed');
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom.toISOString());
+  }
+  if (dateTo) {
+    query = query.lte('created_at', dateTo.toISOString());
+  }
+
+  const { data: leads } = await query;
+
+  // Obtener usuarios
+  const { data: users } = await supabase
+    .from('user_profiles')
+    .select('id, full_name, avatar_url')
+    .eq('is_active', true);
+
+  if (!leads || !users) {
+    return [];
+  }
+
+  // Crear mapa de usuarios
+  const userMap = new Map(users.map((u) => [u.id, { name: u.full_name, avatarUrl: u.avatar_url }]));
+
+  // Agrupar por usuario
+  const groups = new Map<string, {
+    totalLeads: number;
+    activeLeads: number;
+    wonLeads: number;
+    lostLeads: number;
+    totalRevenue: number;
+    cycles: number[];
+  }>();
+
+  for (const lead of leads) {
+    const userId = lead.user_id || 'unassigned';
+    if (!groups.has(userId)) {
+      groups.set(userId, {
+        totalLeads: 0,
+        activeLeads: 0,
+        wonLeads: 0,
+        lostLeads: 0,
+        totalRevenue: 0,
+        cycles: [],
+      });
+    }
+
+    const group = groups.get(userId)!;
+    group.totalLeads++;
+
+    if (wonStageIds.includes(lead.stage_id)) {
+      group.wonLeads++;
+      group.totalRevenue += Number(lead.expected_revenue) || 0;
+
+      // Calcular ciclo de venta
+      if (lead.date_closed && lead.created_at) {
+        const created = new Date(lead.created_at).getTime();
+        const closed = new Date(lead.date_closed).getTime();
+        group.cycles.push((closed - created) / (1000 * 60 * 60 * 24));
+      }
+    } else if (lostStageIds.includes(lead.stage_id)) {
+      group.lostLeads++;
+    } else {
+      group.activeLeads++;
+    }
+  }
+
+  return Array.from(groups.entries())
+    .filter(([userId]) => userId !== 'unassigned')
+    .map(([userId, data]) => {
+      const user = userMap.get(userId);
+      const totalClosed = data.wonLeads + data.lostLeads;
+      return {
+        userId,
+        userName: user?.name || 'Usuario desconocido',
+        avatarUrl: user?.avatarUrl || null,
+        totalLeads: data.totalLeads,
+        activeLeads: data.activeLeads,
+        wonLeads: data.wonLeads,
+        lostLeads: data.lostLeads,
+        conversionRate: totalClosed > 0 ? Math.round((data.wonLeads / totalClosed) * 100) : 0,
+        totalRevenue: Math.round(data.totalRevenue),
+        avgTicket: data.wonLeads > 0 ? Math.round(data.totalRevenue / data.wonLeads) : 0,
+        avgCycle: data.cycles.length > 0
+          ? Math.round(data.cycles.reduce((a, b) => a + b, 0) / data.cycles.length)
+          : 0,
+      };
+    })
+    .sort((a, b) => b.totalRevenue - a.totalRevenue);
 }
 

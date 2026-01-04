@@ -488,3 +488,84 @@ export interface AlertSetting {
   created_at: string;
   updated_at: string;
 }
+
+// ==================== MÉTRICAS CRM ====================
+
+// Métricas principales del dashboard
+export interface CRMMetrics {
+  // KPIs principales
+  totalLeads: number;
+  activeLeads: number;
+  wonLeads: number;
+  lostLeads: number;
+  conversionRate: number;      // % (ganados / total cerrados)
+  avgTicket: number;           // S/. promedio de ventas ganadas
+  avgSalesCycle: number;       // días promedio hasta cierre
+  pipelineValue: number;       // S/. valor ponderado del pipeline
+
+  // Comparación con período anterior (%)
+  leadsChange: number;
+  conversionChange: number;
+  ticketChange: number;
+  cycleChange: number;
+  pipelineChange: number;
+
+  // Período
+  periodStart: Date;
+  periodEnd: Date;
+}
+
+// Datos para gráfico de leads por período
+export interface LeadsByPeriod {
+  period: string;       // "2025-01", "2025-W02", "2025-01-15"
+  periodLabel: string;  // "Ene 2025", "Sem 2", "15 Ene"
+  newLeads: number;
+  wonLeads: number;
+  lostLeads: number;
+  revenue: number;
+}
+
+// Datos para gráfico de leads por fuente
+export interface LeadsBySource {
+  source: LeadSource;
+  sourceLabel: string;
+  count: number;
+  value: number;
+  wonCount: number;
+  conversionRate: number;
+}
+
+// Datos para gráfico de leads por servicio
+export interface LeadsByService {
+  serviceType: ServiceType;
+  serviceLabel: string;
+  count: number;
+  value: number;
+  wonCount: number;
+  conversionRate: number;
+}
+
+// Rendimiento por vendedor
+export interface UserPerformance {
+  userId: string;
+  userName: string;
+  avatarUrl: string | null;
+  totalLeads: number;
+  activeLeads: number;
+  wonLeads: number;
+  lostLeads: number;
+  conversionRate: number;
+  totalRevenue: number;
+  avgTicket: number;
+  avgCycle: number;
+}
+
+// Colores para gráficos de fuentes
+export const LEAD_SOURCE_COLORS: Record<LeadSource, string> = {
+  contact_form: '#3B82F6',  // Azul
+  whatsapp: '#22C55E',      // Verde
+  phone: '#F97316',         // Naranja
+  email: '#8B5CF6',         // Violeta
+  referral: '#EC4899',      // Rosa
+  other: '#6B7280',         // Gris
+};

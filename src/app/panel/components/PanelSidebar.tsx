@@ -142,6 +142,7 @@ const navigationGroups: NavGroup[] = [
     defaultExpanded: true,
     items: [
       { name: 'Pipeline', href: '/panel/crm', icon: icons.pipeline, permission: 'quotations:view' },
+      { name: 'Métricas', href: '/panel/crm/metricas', icon: icons.analytics, permission: 'quotations:view' },
       { name: 'Alertas', href: '/panel/crm/alertas', icon: icons.alert, permission: 'quotations:view' },
       { name: 'Clientes', href: '/panel/clientes', icon: icons.clients, permission: 'clients:view' },
       { name: 'Mensajes', href: '/panel/mensajes', icon: icons.messages, permission: 'clients:view' },
