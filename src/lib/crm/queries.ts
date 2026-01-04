@@ -1099,8 +1099,8 @@ export async function getCRMMetrics(
 
   const wonLeads = wonCurrent.length;
   const lostLeads = lostCurrent.length;
-  const totalClosed = wonLeads + lostLeads;
-  const conversionRate = totalClosed > 0 ? (wonLeads / totalClosed) * 100 : 0;
+  // Tasa de conversión = Ganados / Total Leads del período
+  const conversionRate = totalLeads > 0 ? (wonLeads / totalLeads) * 100 : 0;
 
   const totalRevenueWon = wonCurrent.reduce((sum, l) => sum + (Number(l.expected_revenue) || 0), 0);
   const avgTicket = wonLeads > 0 ? totalRevenueWon / wonLeads : 0;
@@ -1128,8 +1128,8 @@ export async function getCRMMetrics(
   const prevTotalLeads = prevLeads?.length || 0;
   const wonPrev = (closedPrev || []).filter((l) => wonStageIds.includes(l.stage_id));
   const lostPrev = (closedPrev || []).filter((l) => lostStageIds.includes(l.stage_id));
-  const prevTotalClosed = wonPrev.length + lostPrev.length;
-  const prevConversionRate = prevTotalClosed > 0 ? (wonPrev.length / prevTotalClosed) * 100 : 0;
+  // Tasa de conversión del período anterior
+  const prevConversionRate = prevTotalLeads > 0 ? (wonPrev.length / prevTotalLeads) * 100 : 0;
   const prevRevenueWon = wonPrev.reduce((sum, l) => sum + (Number(l.expected_revenue) || 0), 0);
   const prevAvgTicket = wonPrev.length > 0 ? prevRevenueWon / wonPrev.length : 0;
 
