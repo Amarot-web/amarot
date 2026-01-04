@@ -7,6 +7,8 @@ import {
   getLeadActivities,
   getLeadNotes,
   getTeamMembers,
+  getLinkedDocuments,
+  type LinkedDocument,
 } from '@/lib/crm/queries';
 import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/crm/types';
 import LeadActions from '@/components/crm/LeadActions';
@@ -20,19 +22,26 @@ interface PageProps {
 export default async function LeadDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  // Fetch all data in parallel
-  const [lead, stages, lostReasons, activities, notes, teamMembers] = await Promise.all([
-    getLeadById(id),
+  // Fetch lead first to get linked IDs
+  const lead = await getLeadById(id);
+
+  if (!lead) {
+    notFound();
+  }
+
+  // Fetch remaining data in parallel (including linked documents)
+  const [stages, lostReasons, activities, notes, teamMembers, linkedDocuments] = await Promise.all([
     getLeadStages(),
     getLostReasons(),
     getLeadActivities(id),
     getLeadNotes(id),
     getTeamMembers(),
+    getLinkedDocuments({
+      sourceMessageId: lead.sourceMessageId,
+      clientId: lead.clientId,
+      quotationId: lead.quotationId,
+    }),
   ]);
-
-  if (!lead) {
-    notFound();
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
@@ -183,6 +192,60 @@ export default async function LeadDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
+
+          {/* Documentos Vinculados */}
+          {linkedDocuments.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Documentos Vinculados
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {linkedDocuments.map((doc) => (
+                  <Link
+                    key={`${doc.type}-${doc.id}`}
+                    href={doc.href}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-[#DC2626] hover:bg-gray-50 transition-colors group"
+                  >
+                    {/* Icon */}
+                    <div className={`p-2 rounded-lg ${
+                      doc.type === 'message' ? 'bg-blue-100 text-blue-600' :
+                      doc.type === 'client' ? 'bg-green-100 text-green-600' :
+                      'bg-amber-100 text-amber-600'
+                    }`}>
+                      {doc.type === 'message' && (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                      {doc.type === 'client' && (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      )}
+                      {doc.type === 'quotation' && (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[#DC2626] transition-colors">
+                        {doc.label}
+                      </p>
+                      {doc.sublabel && (
+                        <p className="text-xs text-gray-500 truncate">{doc.sublabel}</p>
+                      )}
+                    </div>
+                    {/* Arrow */}
+                    <svg className="w-4 h-4 text-gray-300 group-hover:text-[#DC2626] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Activities */}
           <ActivityList leadId={lead.id} activities={activities} teamMembers={teamMembers} />

@@ -24,6 +24,7 @@ import type {
   UserPerformance,
   LeadSource,
   ServiceType,
+  ForecastColumn,
 } from './types';
 import { LEAD_SOURCE_LABELS, SERVICE_TYPE_LABELS } from './types';
 
@@ -1089,7 +1090,7 @@ export async function getCRMMetrics(
   // Leads activos (no cerrados) - para pipeline value
   const { data: activeLeads } = await supabase
     .from('leads')
-    .select('id, expected_revenue, probability')
+    .select('id, expected_revenue, probability, date_deadline')
     .not('stage_id', 'in', `(${closedStageIds.join(',')})`);
 
   // Calcular métricas período actual
@@ -1123,6 +1124,20 @@ export async function getCRMMetrics(
     (sum, l) => sum + (Number(l.expected_revenue) || 0) * ((l.probability || 0) / 100),
     0
   );
+
+  // Pronóstico de ventas: leads con fecha límite en próximos 30 días × probabilidad
+  const now = new Date();
+  const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const salesForecast = (activeLeads || [])
+    .filter((l) => {
+      if (!l.date_deadline) return false;
+      const deadline = new Date(l.date_deadline);
+      return deadline >= now && deadline <= thirtyDaysLater;
+    })
+    .reduce(
+      (sum, l) => sum + (Number(l.expected_revenue) || 0) * ((l.probability || 0) / 100),
+      0
+    );
 
   // Calcular métricas período anterior para comparación
   const prevTotalLeads = prevLeads?.length || 0;
@@ -1160,6 +1175,7 @@ export async function getCRMMetrics(
     avgTicket: Math.round(avgTicket),
     avgSalesCycle: Math.round(avgSalesCycle),
     pipelineValue: Math.round(pipelineValue),
+    salesForecast: Math.round(salesForecast),
     leadsChange: Math.round(leadsChange),
     conversionChange: Math.round(conversionChange * 10) / 10,
     ticketChange: Math.round(ticketChange),
@@ -1498,5 +1514,237 @@ export async function getUserPerformance(
       };
     })
     .sort((a, b) => b.totalRevenue - a.totalRevenue);
+}
+
+/**
+ * Obtiene leads agrupados por mes de cierre previsto (para vista Forecast)
+ * Incluye leads activos y ganados (excluye perdidos)
+ */
+export async function getLeadsByClosingMonth(): Promise<ForecastColumn[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas para identificar perdidos
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won, is_lost');
+
+  const lostStageIds = (stagesData || [])
+    .filter((s) => s.is_lost)
+    .map((s) => s.id);
+
+  // Obtener leads (activos + ganados, excluir perdidos)
+  let query = supabase
+    .from('leads')
+    .select(`
+      *,
+      stage:lead_stages(*),
+      assigned_to:user_profiles!leads_user_id_fkey(id, full_name, email, avatar_url)
+    `)
+    .order('expected_revenue', { ascending: false });
+
+  // Excluir leads perdidos
+  if (lostStageIds.length > 0) {
+    query = query.not('stage_id', 'in', `(${lostStageIds.join(',')})`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('[getLeadsByClosingMonth] Error:', error);
+    return [];
+  }
+
+  const leads = transformLeads(data || []);
+
+  // Agrupar por mes de cierre
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  const groups = new Map<string, {
+    leads: Lead[];
+    totalValue: number;
+    weightedValue: number;
+  }>();
+
+  // Inicializar grupo "none" para leads sin fecha
+  groups.set('none', { leads: [], totalValue: 0, weightedValue: 0 });
+
+  for (const lead of leads) {
+    let monthKey: string;
+
+    if (lead.dateDeadline) {
+      const deadline = new Date(lead.dateDeadline);
+      monthKey = `${deadline.getFullYear()}-${String(deadline.getMonth() + 1).padStart(2, '0')}`;
+    } else {
+      monthKey = 'none';
+    }
+
+    if (!groups.has(monthKey)) {
+      groups.set(monthKey, { leads: [], totalValue: 0, weightedValue: 0 });
+    }
+
+    const group = groups.get(monthKey)!;
+    group.leads.push(lead);
+    group.totalValue += lead.expectedRevenue;
+    group.weightedValue += lead.expectedRevenue * (lead.probability / 100);
+  }
+
+  // Convertir a array y ordenar por fecha
+  const result: ForecastColumn[] = [];
+
+  // Primero agregar "Sin fecha" si tiene leads
+  const noDateGroup = groups.get('none');
+  if (noDateGroup && noDateGroup.leads.length > 0) {
+    result.push({
+      monthKey: 'none',
+      monthLabel: 'Sin fecha',
+      leads: noDateGroup.leads,
+      totalValue: Math.round(noDateGroup.totalValue),
+      weightedValue: Math.round(noDateGroup.weightedValue),
+      leadCount: noDateGroup.leads.length,
+    });
+  }
+
+  // Luego agregar meses ordenados
+  const monthKeys = Array.from(groups.keys())
+    .filter((k) => k !== 'none')
+    .sort();
+
+  for (const monthKey of monthKeys) {
+    const group = groups.get(monthKey)!;
+    const [year, month] = monthKey.split('-');
+    const monthIndex = parseInt(month, 10) - 1;
+
+    result.push({
+      monthKey,
+      monthLabel: `${monthNames[monthIndex]} ${year}`,
+      leads: group.leads,
+      totalValue: Math.round(group.totalValue),
+      weightedValue: Math.round(group.weightedValue),
+      leadCount: group.leads.length,
+    });
+  }
+
+  return result;
+}
+
+// ========================================
+// DOCUMENTOS VINCULADOS (para detalle del lead)
+// ========================================
+
+/**
+ * Info básica de un documento vinculado
+ */
+export interface LinkedDocument {
+  type: 'message' | 'client' | 'quotation';
+  id: string;
+  label: string;
+  sublabel?: string;
+  href: string;
+  status?: string;
+}
+
+/**
+ * Obtiene los documentos vinculados a un lead
+ */
+export async function getLinkedDocuments(lead: {
+  sourceMessageId: string | null;
+  clientId: string | null;
+  quotationId: string | null;
+}): Promise<LinkedDocument[]> {
+  const supabase = createAdminClient();
+  const documents: LinkedDocument[] = [];
+
+  // Fetch en paralelo
+  const [messageResult, clientResult, quotationResult] = await Promise.all([
+    // Mensaje origen
+    lead.sourceMessageId
+      ? supabase
+          .from('contact_messages')
+          .select('id, name, company, status, created_at')
+          .eq('id', lead.sourceMessageId)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+
+    // Cliente vinculado
+    lead.clientId
+      ? supabase
+          .from('clients')
+          .select('id, company_name, ruc')
+          .eq('id', lead.clientId)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+
+    // Cotización vinculada
+    lead.quotationId
+      ? supabase
+          .from('quotations')
+          .select('id, code, status, total')
+          .eq('id', lead.quotationId)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  // Procesar mensaje
+  if (messageResult.data) {
+    const msg = messageResult.data;
+    const statusLabels: Record<string, string> = {
+      new: 'nuevo',
+      read: 'leído',
+      replied: 'respondido',
+      converted: 'convertido',
+      spam: 'spam',
+    };
+    documents.push({
+      type: 'message',
+      id: msg.id,
+      label: msg.company || msg.name,
+      sublabel: `Mensaje ${statusLabels[msg.status] || msg.status}`,
+      href: `/panel/mensajes?highlight=${msg.id}`,
+      status: msg.status,
+    });
+  }
+
+  // Procesar cliente
+  if (clientResult.data) {
+    const client = clientResult.data;
+    documents.push({
+      type: 'client',
+      id: client.id,
+      label: client.company_name,
+      sublabel: client.ruc ? `RUC: ${client.ruc}` : undefined,
+      href: `/panel/clientes/${client.id}`,
+    });
+  }
+
+  // Procesar cotización
+  if (quotationResult.data) {
+    const quot = quotationResult.data;
+    const statusLabels: Record<string, string> = {
+      draft: 'borrador',
+      sent: 'enviada',
+      approved: 'aprobada',
+      rejected: 'rechazada',
+    };
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 0,
+      }).format(amount);
+
+    documents.push({
+      type: 'quotation',
+      id: quot.id,
+      label: quot.code,
+      sublabel: `${statusLabels[quot.status] || quot.status} • ${formatCurrency(Number(quot.total) || 0)}`,
+      href: `/panel/cotizador/${quot.id}`,
+      status: quot.status,
+    });
+  }
+
+  return documents;
 }
 

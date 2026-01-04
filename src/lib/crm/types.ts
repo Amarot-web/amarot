@@ -502,6 +502,7 @@ export interface CRMMetrics {
   avgTicket: number;           // S/. promedio de ventas ganadas
   avgSalesCycle: number;       // días promedio hasta cierre
   pipelineValue: number;       // S/. valor ponderado del pipeline
+  salesForecast: number;       // S/. pronóstico próximos 30 días
 
   // Comparación con período anterior (%)
   leadsChange: number;
@@ -569,3 +570,15 @@ export const LEAD_SOURCE_COLORS: Record<LeadSource, string> = {
   referral: '#EC4899',      // Rosa
   other: '#6B7280',         // Gris
 };
+
+// ==================== FORECAST VIEW ====================
+
+// Columna de forecast (por mes de cierre)
+export interface ForecastColumn {
+  monthKey: string;       // "2025-01" o "none" para sin fecha
+  monthLabel: string;     // "Enero 2025" o "Sin fecha"
+  leads: Lead[];
+  totalValue: number;
+  weightedValue: number;
+  leadCount: number;
+}
