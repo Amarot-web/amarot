@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface MetricCardProps {
   title: string;
   value: string | number;
@@ -8,6 +10,7 @@ interface MetricCardProps {
   icon: React.ReactNode;
   color?: 'blue' | 'green' | 'red' | 'yellow' | 'purple';
   format?: 'number' | 'currency' | 'percent' | 'days';
+  tooltip?: string;
 }
 
 const colorClasses = {
@@ -26,7 +29,10 @@ export default function MetricCard({
   icon,
   color = 'blue',
   format = 'number',
+  tooltip,
 }: MetricCardProps) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const formatValue = (val: string | number): string => {
     if (typeof val === 'string') return val;
 
@@ -53,10 +59,29 @@ export default function MetricCard({
   const showChange = change !== undefined && change !== 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+    <div
+      className="relative bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+      onMouseEnter={() => tooltip && setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {/* Tooltip */}
+      {tooltip && showTooltip && (
+        <div className="absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg max-w-[200px] text-center">
+          {tooltip}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+        </div>
+      )}
+
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            {tooltip && (
+              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+          </div>
           <p className="mt-2 text-3xl font-bold text-gray-900">
             {formatValue(value)}
           </p>
