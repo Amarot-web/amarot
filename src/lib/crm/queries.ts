@@ -16,6 +16,7 @@ import type {
   DbLeadActivity,
   DbLeadNote,
   ClientBasic,
+  AlertSetting,
 } from './types';
 
 /**
@@ -949,5 +950,74 @@ export async function getClosedLeads(options: {
   }
 
   return transformLeads(data || []);
+}
+
+// ========================================
+// CONFIGURACIÓN DE ALERTAS
+// ========================================
+
+/**
+ * Obtiene todas las configuraciones de alertas
+ */
+export async function getAlertSettings(): Promise<AlertSetting[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('crm_alert_settings')
+    .select('*')
+    .order('position', { ascending: true });
+
+  if (error) {
+    console.error('[getAlertSettings] Error:', error);
+    return [];
+  }
+
+  return (data || []).map((s) => ({
+    id: s.id,
+    setting_key: s.setting_key,
+    value: s.value,
+    unit: s.unit,
+    label: s.label,
+    description: s.description,
+    position: s.position,
+    is_enabled: s.is_enabled,
+    created_at: s.created_at,
+    updated_at: s.updated_at,
+  }));
+}
+
+/**
+ * Obtiene una configuración de alerta por su clave
+ */
+export async function getAlertSettingByKey(
+  key: string
+): Promise<AlertSetting | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('crm_alert_settings')
+    .select('*')
+    .eq('setting_key', key)
+    .single();
+
+  if (error) {
+    console.error('[getAlertSettingByKey] Error:', error);
+    return null;
+  }
+
+  return data
+    ? {
+        id: data.id,
+        setting_key: data.setting_key,
+        value: data.value,
+        unit: data.unit,
+        label: data.label,
+        description: data.description,
+        position: data.position,
+        is_enabled: data.is_enabled,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      }
+    : null;
 }
 

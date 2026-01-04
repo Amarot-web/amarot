@@ -27,7 +27,7 @@ interface KanbanBoardProps {
   alertsMap: Record<string, string[]>;
 }
 
-type ViewMode = 'kanban' | 'list';
+type ViewMode = 'kanban' | 'list' | 'grouped';
 type SortColumn = 'code' | 'company' | 'serviceType' | 'stage' | 'expectedRevenue' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
 
@@ -39,6 +39,8 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [sortColumn, setSortColumn] = useState<SortColumn>('createdAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  // Estado para etapas expandidas en vista agrupada
+  const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
   // Estado para el modal de ganar
   const [pendingWinLead, setPendingWinLead] = useState<Lead | null>(null);
   const [pendingWinSourceStageId, setPendingWinSourceStageId] = useState<string | null>(null);
@@ -264,6 +266,19 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
     }
   };
 
+  // Toggle de etapa expandida en vista agrupada
+  const toggleStageExpanded = (stageId: string) => {
+    setExpandedStages((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(stageId)) {
+        newSet.delete(stageId);
+      } else {
+        newSet.add(stageId);
+      }
+      return newSet;
+    });
+  };
+
   // Icono de ordenamiento
   const SortIcon = ({ column }: { column: SortColumn }) => {
     if (sortColumn !== column) {
@@ -371,6 +386,19 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
             </button>
+            <button
+              onClick={() => setViewMode('grouped')}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === 'grouped'
+                  ? 'bg-white text-[#DC2626] shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              title="Vista Agrupada"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -384,7 +412,7 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
         </div>
       )}
 
-      {viewMode === 'kanban' ? (
+      {viewMode === 'kanban' && (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -410,7 +438,9 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
             ) : null}
           </DragOverlay>
         </DndContext>
-      ) : (
+      )}
+
+      {viewMode === 'list' && (
         /* Vista Lista */
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {/* Tabla para desktop */}
@@ -563,6 +593,114 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {viewMode === 'grouped' && (
+        /* Vista Agrupada por Etapa (Acordeón) */
+        <div className="bg-white rounded-xl shadow overflow-hidden divide-y divide-gray-200">
+          {stages.map((stage) => {
+            const stageLeads = filterLeads(leadsByStage[stage.id] || []);
+            const isExpanded = expandedStages.has(stage.id);
+            const totalValue = stageLeads.reduce((sum, lead) => sum + lead.expectedRevenue, 0);
+
+            return (
+              <div key={stage.id}>
+                {/* Header del acordeón */}
+                <button
+                  onClick={() => toggleStageExpanded(stage.id)}
+                  className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Indicador de color */}
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: stage.color }}
+                    />
+                    {/* Nombre de etapa */}
+                    <span className="font-medium text-gray-900">
+                      {stage.displayName}
+                    </span>
+                    {/* Badge con conteo */}
+                    <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-gray-100 text-sm font-medium text-gray-700">
+                      {stageLeads.length}
+                    </span>
+                    {/* Valor total de la etapa */}
+                    {totalValue > 0 && (
+                      <span className="text-sm text-gray-500">
+                        ({formatCurrency(totalValue)})
+                      </span>
+                    )}
+                  </div>
+                  {/* Icono expandir/colapsar */}
+                  <svg
+                    className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Contenido expandible */}
+                {isExpanded && (
+                  <div className="bg-gray-50 border-t border-gray-100">
+                    {stageLeads.length === 0 ? (
+                      <div className="px-4 py-6 text-center text-sm text-gray-500">
+                        No hay leads en esta etapa
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {stageLeads.map((lead) => (
+                          <Link
+                            key={lead.id}
+                            href={`/panel/crm/leads/${lead.id}`}
+                            className="block px-4 py-3 hover:bg-white transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="text-sm font-medium text-[#DC2626]">
+                                    {lead.code}
+                                  </span>
+                                  <span className="text-xs text-gray-400">•</span>
+                                  <span className="text-xs text-gray-500">
+                                    {SERVICE_TYPE_LABELS[lead.serviceType] || lead.serviceType}
+                                  </span>
+                                </div>
+                                <div className="text-sm font-medium text-gray-900 truncate">
+                                  {lead.company}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {lead.contactName}
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {formatCurrency(lead.expectedRevenue)}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  {formatDate(lead.createdAt)}
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Mensaje cuando no hay resultados */}
+          {stages.every((stage) => filterLeads(leadsByStage[stage.id] || []).length === 0) && (
+            <div className="p-8 text-center text-gray-500">
+              {searchQuery ? 'No se encontraron resultados' : 'No hay leads'}
+            </div>
+          )}
         </div>
       )}
 

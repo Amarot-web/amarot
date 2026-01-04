@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getAuthUser } from '@/lib/auth/permissions';
 import PanelSidebar from './components/PanelSidebar';
+import PanelMain from './components/PanelMain';
 import { PermissionsProvider } from '@/hooks/usePermissions';
+import { SidebarProvider } from './components/SidebarContext';
 
 export default async function PanelLayout({
   children,
@@ -17,12 +19,12 @@ export default async function PanelLayout({
 
   return (
     <PermissionsProvider initialUser={user}>
-      <div className="min-h-screen bg-gray-100">
-        <PanelSidebar user={user} />
-        <main className="lg:pl-64">
-          <div className="p-6">{children}</div>
-        </main>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen bg-gray-100">
+          <PanelSidebar user={user} />
+          <PanelMain>{children}</PanelMain>
+        </div>
+      </SidebarProvider>
     </PermissionsProvider>
   );
 }

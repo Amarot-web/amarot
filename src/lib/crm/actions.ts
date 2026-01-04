@@ -1327,3 +1327,90 @@ export async function winLeadWithClient(
   return { success: true, clientId: finalClientId || undefined };
 }
 
+// ========================================
+// CONFIGURACIÓN DE ALERTAS
+// ========================================
+
+/**
+ * Actualiza una configuración de alerta
+ */
+export async function updateAlertSetting(
+  settingId: string,
+  data: { value?: number; is_enabled?: boolean }
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  // Validar que el valor sea positivo
+  if (data.value !== undefined && data.value <= 0) {
+    return { success: false, error: 'El valor debe ser mayor a 0' };
+  }
+
+  const supabase = createAdminClient();
+
+  const updateData: Record<string, unknown> = {};
+  if (data.value !== undefined) updateData.value = data.value;
+  if (data.is_enabled !== undefined) updateData.is_enabled = data.is_enabled;
+
+  const { error } = await supabase
+    .from('crm_alert_settings')
+    .update(updateData)
+    .eq('id', settingId);
+
+  if (error) {
+    console.error('[updateAlertSetting] Error:', error);
+    return { success: false, error: 'Error al actualizar configuración' };
+  }
+
+  revalidatePath('/panel/crm');
+  revalidatePath('/panel/crm/alertas');
+  revalidatePath('/panel/crm/configuracion/alertas');
+
+  return { success: true };
+}
+
+/**
+ * Actualiza múltiples configuraciones de alertas a la vez
+ */
+export async function updateAlertSettings(
+  settings: Array<{ id: string; value: number; is_enabled: boolean }>
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  // Validar todos los valores
+  for (const setting of settings) {
+    if (setting.value <= 0) {
+      return { success: false, error: 'Todos los valores deben ser mayores a 0' };
+    }
+  }
+
+  const supabase = createAdminClient();
+
+  // Actualizar cada setting
+  for (const setting of settings) {
+    const { error } = await supabase
+      .from('crm_alert_settings')
+      .update({
+        value: setting.value,
+        is_enabled: setting.is_enabled,
+      })
+      .eq('id', setting.id);
+
+    if (error) {
+      console.error('[updateAlertSettings] Error:', error);
+      return { success: false, error: 'Error al actualizar configuración' };
+    }
+  }
+
+  revalidatePath('/panel/crm');
+  revalidatePath('/panel/crm/alertas');
+  revalidatePath('/panel/crm/configuracion/alertas');
+
+  return { success: true };
+}
+

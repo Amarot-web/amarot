@@ -474,3 +474,17 @@ export interface ClientBasic {
   ruc: string | null;
   email: string | null;
 }
+
+// Configuración de alertas
+export interface AlertSetting {
+  id: string;
+  setting_key: string;
+  value: number;
+  unit: 'hours' | 'days';
+  label: string;
+  description: string | null;
+  position: number;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
