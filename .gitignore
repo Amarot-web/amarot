@@ -49,3 +49,9 @@ planSEO.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code
+.claude/
+
+# supabase temp
+supabase/.temp/
