@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { markLeadAsLost, deleteLead, changeLeadStage, fetchEmailTemplates } from '@/lib/crm/actions';
+import { markLeadAsLost, deleteLead, changeLeadStage, fetchEmailTemplates, reactivateLead } from '@/lib/crm/actions';
 import type { Lead, LeadStage, LostReason, EmailTemplate } from '@/lib/crm/types';
 import EmailTemplateSelector from './EmailTemplateSelector';
 import WinLeadModal from './WinLeadModal';
@@ -21,7 +21,12 @@ export default function LeadActions({ lead, stages, lostReasons }: LeadActionsPr
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isClosedLead = lead.stage?.isWon || lead.stage?.isLost;
+  // Lead ganado: está en etapa "Ganado"
+  const isWonLead = lead.stage?.isWon || false;
+  // Lead perdido: tiene lostReasonId (nuevo modelo: mantiene su etapa pero está marcado como perdido)
+  const isLostLead = !!lead.lostReasonId;
+  // Lead cerrado (ganado o perdido)
+  const isClosedLead = isWonLead || isLostLead;
   const activeStages = stages.filter((s) => !s.isWon && !s.isLost);
 
   // Cargar plantillas de email al abrir el modal
@@ -75,6 +80,19 @@ export default function LeadActions({ lead, stages, lostReasons }: LeadActionsPr
     setIsSubmitting(false);
   };
 
+  const handleReactivate = async () => {
+    if (!confirm('¿Reactivar esta oportunidad? El lead volverá al pipeline activo.')) return;
+
+    setIsSubmitting(true);
+    const result = await reactivateLead(lead.id);
+    if (result.success) {
+      router.refresh();
+    } else {
+      alert(result.error || 'Error al reactivar');
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="space-y-4">
       {/* Stage Selector */}
@@ -124,21 +142,40 @@ export default function LeadActions({ lead, stages, lostReasons }: LeadActionsPr
         </div>
       )}
 
-      {/* Status Badge */}
-      {isClosedLead && (
-        <div
-          className={`text-center py-3 px-4 rounded-lg font-semibold ${
-            lead.stage?.isWon
-              ? 'bg-green-100 text-green-800 border border-green-200'
-              : 'bg-red-100 text-red-800 border border-red-200'
-          }`}
-        >
-          {lead.stage?.isWon ? '✓ GANADO' : '✗ PERDIDO'}
-          {lead.lostReason && (
-            <p className="text-sm font-normal mt-1">
-              Razón: {lead.lostReason.displayName}
+      {/* Status Badge - Ganado */}
+      {isWonLead && (
+        <div className="text-center py-3 px-4 rounded-lg font-semibold bg-green-100 text-green-800 border border-green-200">
+          ✓ GANADO
+        </div>
+      )}
+
+      {/* Status Badge - Perdido con botón Reactivar */}
+      {isLostLead && !isWonLead && (
+        <div className="bg-red-50 border border-red-200 rounded-lg overflow-hidden">
+          <div className="text-center py-3 px-4 bg-red-100 text-red-800 font-semibold">
+            ✗ PERDIDO
+            {lead.lostReason && (
+              <p className="text-sm font-normal mt-1">
+                Razón: {lead.lostReason.displayName}
+              </p>
+            )}
+          </div>
+          {/* Botón Reactivar */}
+          <div className="p-3 border-t border-red-200">
+            <button
+              onClick={handleReactivate}
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {isSubmitting ? 'Reactivando...' : 'Reactivar Oportunidad'}
+            </button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              El lead volverá al pipeline en su etapa actual
             </p>
-          )}
+          </div>
         </div>
       )}
 

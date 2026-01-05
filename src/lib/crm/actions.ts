@@ -313,7 +313,35 @@ export async function markLeadAsLost(
 
   if (error) {
     console.error('[markLeadAsLost] Error:', error);
-    return { success: false, error: 'Error al marcar como perdido' };
+    return { success: false, error: `Error: ${error.message || error.code || 'desconocido'}` };
+  }
+
+  revalidatePath('/panel/crm');
+  revalidatePath(`/panel/crm/leads/${leadId}`);
+  return { success: true };
+}
+
+/**
+ * Reactiva un lead que estaba marcado como perdido
+ */
+export async function reactivateLead(
+  leadId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.rpc('reactivate_lost_lead', {
+    p_lead_id: leadId,
+    p_user_id: user.id,
+  });
+
+  if (error) {
+    console.error('[reactivateLead] Error:', error);
+    return { success: false, error: 'Error al reactivar el lead' };
   }
 
   revalidatePath('/panel/crm');
