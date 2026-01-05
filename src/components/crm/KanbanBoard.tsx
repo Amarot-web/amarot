@@ -420,14 +420,16 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
           onDragEnd={handleDragEnd}
         >
           <div className="flex gap-4 overflow-x-auto pb-4">
-            {stages.map((stage) => (
-              <KanbanColumn
-                key={stage.id}
-                stage={stage}
-                leads={filterLeads(leadsByStage[stage.id] || [])}
-                alertsMap={alertsMap}
-              />
-            ))}
+            {stages
+              .filter((stage) => !stage.isLost) // Excluir etapa "Perdido"
+              .map((stage) => (
+                <KanbanColumn
+                  key={stage.id}
+                  stage={stage}
+                  leads={filterLeads(leadsByStage[stage.id] || [])}
+                  alertsMap={alertsMap}
+                />
+              ))}
           </div>
 
           <DragOverlay>
@@ -599,8 +601,10 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
       {viewMode === 'grouped' && (
         /* Vista Agrupada por Etapa (Acordeón) */
         <div className="bg-white rounded-xl shadow overflow-hidden divide-y divide-gray-200">
-          {stages.map((stage) => {
-            const stageLeads = filterLeads(leadsByStage[stage.id] || []);
+          {stages
+            .filter((stage) => !stage.isLost) // Excluir etapa "Perdido"
+            .map((stage) => {
+              const stageLeads = filterLeads(leadsByStage[stage.id] || []);
             const isExpanded = expandedStages.has(stage.id);
             const totalValue = stageLeads.reduce((sum, lead) => sum + lead.expectedRevenue, 0);
 

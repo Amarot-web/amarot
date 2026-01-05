@@ -1,6 +1,7 @@
 import {
   getLeadStages,
   getLeadsByStage,
+  getLostLeadsByStage,
   getPipelineSummary,
   getLeadAlertsMap,
   getLeadsByClosingMonth,
@@ -11,9 +12,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function CRMPage() {
   // Fetch data in parallel
-  const [stages, leadsByStageMap, summary, alertsMap, forecastColumns] = await Promise.all([
+  const [stages, leadsByStageMap, lostLeadsByStageMap, summary, alertsMap, forecastColumns] = await Promise.all([
     getLeadStages(),
     getLeadsByStage(),
+    getLostLeadsByStage(),
     getPipelineSummary(),
     getLeadAlertsMap(),
     getLeadsByClosingMonth(),
@@ -25,10 +27,19 @@ export default async function CRMPage() {
     leadsByStage[stageId] = leads;
   });
 
+  // Convert lost leads Map to Record
+  const lostLeadsByStage: Record<string, typeof lostLeadsByStageMap extends Map<string, infer V> ? V : never> = {};
+  lostLeadsByStageMap.forEach((leads, stageId) => {
+    lostLeadsByStage[stageId] = leads;
+  });
+
   // Ensure all stages have an entry
   stages.forEach((stage) => {
     if (!leadsByStage[stage.id]) {
       leadsByStage[stage.id] = [];
+    }
+    if (!lostLeadsByStage[stage.id]) {
+      lostLeadsByStage[stage.id] = [];
     }
   });
 
@@ -36,6 +47,7 @@ export default async function CRMPage() {
     <PipelineClient
       stages={stages}
       leadsByStage={leadsByStage}
+      lostLeadsByStage={lostLeadsByStage}
       summary={summary}
       alertsMap={alertsMap}
       forecastColumns={forecastColumns}

@@ -5,12 +5,14 @@ import Link from 'next/link';
 import type { Lead, LeadStage, PipelineStageSummary, ForecastColumn } from '@/lib/crm/types';
 import KanbanBoard from '@/components/crm/KanbanBoard';
 import ForecastKanban from '@/components/crm/ForecastKanban';
+import LostKanban from '@/components/crm/LostKanban';
 
-type ViewMode = 'stage' | 'forecast';
+type ViewMode = 'stage' | 'forecast' | 'lost';
 
 interface PipelineClientProps {
   stages: LeadStage[];
   leadsByStage: Record<string, Lead[]>;
+  lostLeadsByStage: Record<string, Lead[]>;
   summary: PipelineStageSummary[];
   alertsMap: Record<string, string[]>;
   forecastColumns: ForecastColumn[];
@@ -19,11 +21,15 @@ interface PipelineClientProps {
 export default function PipelineClient({
   stages,
   leadsByStage,
+  lostLeadsByStage,
   summary,
   alertsMap,
   forecastColumns,
 }: PipelineClientProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('stage');
+
+  // Convert lostLeadsByStage Record back to Map for LostKanban
+  const lostLeadsMap = new Map(Object.entries(lostLeadsByStage));
 
   // Calculate totals
   const totalLeads = summary
@@ -88,6 +94,20 @@ export default function PipelineClient({
               </svg>
               <span className="hidden sm:inline">Forecast</span>
             </button>
+            <button
+              onClick={() => setViewMode('lost')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'lost'
+                  ? 'bg-white text-[#DC2626] shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              title="Oportunidades Perdidas"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="hidden sm:inline">Perdidas</span>
+            </button>
           </div>
 
           {/* Nuevo Lead button */}
@@ -140,10 +160,14 @@ export default function PipelineClient({
       </div>
 
       {/* View content */}
-      {viewMode === 'stage' ? (
+      {viewMode === 'stage' && (
         <KanbanBoard stages={stages} leadsByStage={leadsByStage} alertsMap={alertsMap} />
-      ) : (
+      )}
+      {viewMode === 'forecast' && (
         <ForecastKanban columns={forecastColumns} alertsMap={alertsMap} />
+      )}
+      {viewMode === 'lost' && (
+        <LostKanban stages={stages} leadsByStage={lostLeadsMap} alertsMap={alertsMap} />
       )}
     </div>
   );

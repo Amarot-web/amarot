@@ -181,7 +181,8 @@ export async function getLeads(
 }
 
 /**
- * Obtiene leads agrupados por etapa (para Kanban)
+ * Obtiene leads agrupados por etapa (para Kanban Pipeline)
+ * Excluye leads perdidos (lost_reason_id IS NOT NULL)
  */
 export async function getLeadsByStage(): Promise<Map<string, Lead[]>> {
   const supabase = createAdminClient();
@@ -195,10 +196,50 @@ export async function getLeadsByStage(): Promise<Map<string, Lead[]>> {
       assigned_to:user_profiles!leads_user_id_fkey(id, full_name, email, avatar_url)
     `
     )
+    .is('lost_reason_id', null) // Excluir perdidos
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('[getLeadsByStage] Error:', error);
+    return new Map();
+  }
+
+  const leads = transformLeads(data || []);
+  const grouped = new Map<string, Lead[]>();
+
+  for (const lead of leads) {
+    const stageId = lead.stageId;
+    if (!grouped.has(stageId)) {
+      grouped.set(stageId, []);
+    }
+    grouped.get(stageId)!.push(lead);
+  }
+
+  return grouped;
+}
+
+/**
+ * Obtiene leads PERDIDOS agrupados por etapa (para vista Perdidas)
+ * Solo incluye leads con lost_reason_id IS NOT NULL
+ */
+export async function getLostLeadsByStage(): Promise<Map<string, Lead[]>> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('leads')
+    .select(
+      `
+      *,
+      stage:lead_stages(*),
+      assigned_to:user_profiles!leads_user_id_fkey(id, full_name, email, avatar_url),
+      lost_reason:lost_reasons(*)
+    `
+    )
+    .not('lost_reason_id', 'is', null) // Solo perdidos
+    .order('date_closed', { ascending: false });
+
+  if (error) {
+    console.error('[getLostLeadsByStage] Error:', error);
     return new Map();
   }
 
