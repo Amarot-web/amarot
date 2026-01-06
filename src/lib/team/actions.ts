@@ -3,6 +3,98 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/server';
 
+// ========================================
+// CREATE TEAM MEMBER
+// ========================================
+
+interface CreateMemberData {
+  email: string;
+  fullName: string;
+  phone: string | null;
+  role: 'admin' | 'manager' | 'member';
+  tempPassword: string;
+}
+
+export async function createTeamMember(
+  data: CreateMemberData
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = createAdminClient();
+
+  try {
+    // 1. Crear el usuario en auth.users
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: data.email,
+      password: data.tempPassword,
+      email_confirm: true, // Auto-confirmar email
+      user_metadata: {
+        full_name: data.fullName,
+      },
+    });
+
+    if (authError) {
+      console.error('[createTeamMember] Auth error:', authError);
+      return { success: false, error: `Error creando usuario: ${authError.message}` };
+    }
+
+    if (!authData.user) {
+      return { success: false, error: 'No se pudo crear el usuario' };
+    }
+
+    // 2. Crear perfil en user_profiles (usando admin client, bypasa RLS)
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: authData.user.id,
+        email: data.email,
+        full_name: data.fullName,
+        phone: data.phone || null,
+        is_active: true,
+      });
+
+    if (profileError) {
+      console.error('[createTeamMember] Profile error:', profileError);
+      // Intentar eliminar el usuario de auth si falla el perfil
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return { success: false, error: `Error creando perfil: ${profileError.message}` };
+    }
+
+    // 3. Obtener el ID del rol seleccionado
+    const { data: roleData, error: roleError } = await supabase
+      .from('roles')
+      .select('id')
+      .eq('name', data.role)
+      .single();
+
+    if (roleError || !roleData) {
+      console.error('[createTeamMember] Role error:', roleError);
+      return { success: false, error: 'No se encontró el rol seleccionado' };
+    }
+
+    // 4. Asignar el rol al usuario
+    const { error: userRoleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: authData.user.id,
+        role_id: roleData.id,
+      });
+
+    if (userRoleError) {
+      console.error('[createTeamMember] User role error:', userRoleError);
+      return { success: false, error: `Error asignando rol: ${userRoleError.message}` };
+    }
+
+    revalidatePath('/panel/equipo');
+    return { success: true };
+  } catch (err) {
+    console.error('[createTeamMember] Error:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}
+
+// ========================================
+// UPDATE TEAM MEMBER
+// ========================================
+
 interface UpdateMemberData {
   userId: string;
   fullName: string;
