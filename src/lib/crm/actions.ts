@@ -28,6 +28,7 @@ export async function createLead(formData: FormData): Promise<{ success: boolean
     return { success: false, error: 'No autorizado' };
   }
 
+  const priorityValue = formData.get('priority') as string;
   const rawData = {
     company: formData.get('company') as string,
     contactName: formData.get('contactName') as string,
@@ -39,6 +40,7 @@ export async function createLead(formData: FormData): Promise<{ success: boolean
     stageId: formData.get('stageId') as string || undefined,
     expectedRevenue: formData.get('expectedRevenue') ? Number(formData.get('expectedRevenue')) : undefined,
     dateDeadline: formData.get('dateDeadline') ? new Date(formData.get('dateDeadline') as string) : undefined,
+    priority: priorityValue && priorityValue !== '' ? priorityValue : null,
     userId: formData.get('userId') as string || undefined,
     source: formData.get('source') as string,
     clientId: formData.get('clientId') as string || undefined,
@@ -79,6 +81,7 @@ export async function createLead(formData: FormData): Promise<{ success: boolean
       stage_id: stageId,
       expected_revenue: parsed.data.expectedRevenue || 0,
       date_deadline: parsed.data.dateDeadline?.toISOString() || null,
+      priority: parsed.data.priority || null,
       user_id: parsed.data.userId || null,
       source: parsed.data.source,
       client_id: rawData.clientId || null,
@@ -109,6 +112,7 @@ export async function updateLead(
   }
 
   const clientId = formData.get('clientId') as string || null;
+  const priorityValue = formData.get('priority') as string;
 
   const rawData = {
     company: formData.get('company') as string,
@@ -120,6 +124,7 @@ export async function updateLead(
     description: formData.get('description') as string || undefined,
     expectedRevenue: formData.get('expectedRevenue') ? Number(formData.get('expectedRevenue')) : undefined,
     dateDeadline: formData.get('dateDeadline') ? new Date(formData.get('dateDeadline') as string) : undefined,
+    priority: priorityValue && priorityValue !== '' ? priorityValue : null,
     userId: formData.get('userId') as string || undefined,
     source: formData.get('source') as string,
   };
@@ -143,6 +148,7 @@ export async function updateLead(
       description: parsed.data.description || null,
       expected_revenue: parsed.data.expectedRevenue || 0,
       date_deadline: parsed.data.dateDeadline?.toISOString() || null,
+      priority: parsed.data.priority || null,
       user_id: parsed.data.userId || null,
       source: parsed.data.source,
       client_id: clientId,
