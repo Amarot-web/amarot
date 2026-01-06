@@ -1,12 +1,14 @@
 'use client';
 
-import { MetricCard, PipelineChart, SourceChart, TrendChart } from '@/components/crm/charts';
-import type { CRMMetrics, LeadsByPeriod, LeadsBySource, PipelineStageSummary } from '@/lib/crm/types';
+import { MetricCard, PipelineChart, SourceChart, TrendChart, ServiceTypeDonutChart, ServiceTypeBarChart } from '@/components/crm/charts';
+import type { CRMMetrics, LeadsByPeriod, LeadsBySource, LeadsByService, PipelineStageSummary } from '@/lib/crm/types';
 
 interface MetricsDashboardProps {
   metrics: CRMMetrics;
   trendData: LeadsByPeriod[];
-  sourceData: LeadsBySource[];
+  sourceData: LeadsBySource[];           // Para donut (solo pipeline)
+  sourcePerformanceData: LeadsBySource[]; // Para tabla (incluye ganados)
+  serviceTypeData: LeadsByService[];
   pipelineData: PipelineStageSummary[];
 }
 
@@ -14,6 +16,8 @@ export default function MetricsDashboard({
   metrics,
   trendData,
   sourceData,
+  sourcePerformanceData,
+  serviceTypeData,
   pipelineData,
 }: MetricsDashboardProps) {
   return (
@@ -141,6 +145,25 @@ export default function MetricsDashboard({
         </div>
       </div>
 
+      {/* Gráficos por Tipo de Servicio */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pipeline por tipo de servicio */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Pipeline por Tipo de Servicio
+          </h3>
+          <ServiceTypeBarChart data={serviceTypeData} />
+        </div>
+
+        {/* Leads por tipo de servicio */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Leads por Tipo de Servicio
+          </h3>
+          <ServiceTypeDonutChart data={serviceTypeData} />
+        </div>
+      </div>
+
       {/* Gráfico de tendencia */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -150,7 +173,7 @@ export default function MetricsDashboard({
       </div>
 
       {/* Tabla de fuentes con detalle */}
-      {sourceData.length > 0 && (
+      {sourcePerformanceData.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -178,7 +201,7 @@ export default function MetricsDashboard({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sourceData.map((source) => (
+              {sourcePerformanceData.map((source) => (
                 <tr key={source.source} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {source.sourceLabel}

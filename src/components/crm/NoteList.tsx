@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createNote, deleteNote } from '@/lib/crm/actions';
+import { createNote, deleteNote, updateNote } from '@/lib/crm/actions';
 import type { LeadNote } from '@/lib/crm/types';
 
 interface NoteListProps {
@@ -14,6 +14,9 @@ export default function NoteList({ leadId, notes }: NoteListProps) {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,34 @@ export default function NoteList({ leadId, notes }: NoteListProps) {
     } else {
       alert(result.error || 'Error al eliminar');
     }
+  };
+
+  const handleStartEdit = (note: LeadNote) => {
+    setEditingNoteId(note.id);
+    setEditContent(note.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditContent('');
+  };
+
+  const handleSaveEdit = async (noteId: string) => {
+    if (!editContent.trim()) return;
+
+    setIsUpdating(true);
+    const formData = new FormData();
+    formData.set('content', editContent);
+
+    const result = await updateNote(noteId, formData);
+    if (result.success) {
+      setEditingNoteId(null);
+      setEditContent('');
+      router.refresh();
+    } else {
+      alert(result.error || 'Error al actualizar nota');
+    }
+    setIsUpdating(false);
   };
 
   const formatDate = (date: Date) => {
@@ -113,19 +144,62 @@ export default function NoteList({ leadId, notes }: NoteListProps) {
                     {formatDate(note.createdAt)}
                   </span>
                 </div>
-                <button
-                  onClick={() => handleDelete(note.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 rounded"
-                  title="Eliminar"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                {editingNoteId !== note.id && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleStartEdit(note)}
+                      className="p-1 text-gray-400 hover:text-blue-600 rounded"
+                      title="Editar"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(note.id)}
+                      className="p-1 text-gray-400 hover:text-red-600 rounded"
+                      title="Eliminar"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
-              <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">
-                {note.content}
-              </p>
+
+              {/* Note content or edit form */}
+              {editingNoteId === note.id ? (
+                <div className="mt-2">
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#DC2626] focus:border-transparent resize-none"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isUpdating}
+                      className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => handleSaveEdit(note.id)}
+                      disabled={isUpdating || !editContent.trim()}
+                      className="px-3 py-1.5 bg-[#DC2626] text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isUpdating ? 'Guardando...' : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">
+                  {note.content}
+                </p>
+              )}
             </div>
           ))
         )}
