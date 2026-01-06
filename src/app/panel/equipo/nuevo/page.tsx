@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { createTeamMember } from '@/lib/team/actions';
 
 type Role = 'admin' | 'manager' | 'member';
 
@@ -44,67 +44,17 @@ export default function NuevoMiembroPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-
     try {
-      // 1. Crear el usuario en auth.users via invitación
-      // Nota: Esto requiere configuración de email en Supabase o usar signUp directo
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const result = await createTeamMember({
         email: formData.email,
-        password: formData.tempPassword,
-        options: {
-          data: {
-            full_name: formData.fullName,
-          },
-        },
+        fullName: formData.fullName,
+        phone: formData.phone || null,
+        role: formData.role,
+        tempPassword: formData.tempPassword,
       });
 
-      if (authError) {
-        throw new Error(`Error creando usuario: ${authError.message}`);
-      }
-
-      if (!authData.user) {
-        throw new Error('No se pudo crear el usuario');
-      }
-
-      // 2. Crear perfil en user_profiles
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          id: authData.user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          phone: formData.phone || null,
-          is_active: true,
-        });
-
-      if (profileError) {
-        // Si falla el perfil, el usuario ya existe en auth pero sin perfil
-        console.error('Error creating profile:', profileError);
-        throw new Error(`Error creando perfil: ${profileError.message}`);
-      }
-
-      // 3. Obtener el ID del rol seleccionado
-      const { data: roleData, error: roleError } = await supabase
-        .from('roles')
-        .select('id')
-        .eq('name', formData.role)
-        .single();
-
-      if (roleError || !roleData) {
-        throw new Error('No se encontró el rol seleccionado');
-      }
-
-      // 4. Asignar el rol al usuario
-      const { error: userRoleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role_id: roleData.id,
-        });
-
-      if (userRoleError) {
-        throw new Error(`Error asignando rol: ${userRoleError.message}`);
+      if (!result.success) {
+        throw new Error(result.error || 'Error desconocido');
       }
 
       setSuccess(true);
