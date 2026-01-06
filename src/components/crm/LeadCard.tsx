@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Link from 'next/link';
 import type { Lead, AlertType } from '@/lib/crm/types';
-import { SERVICE_TYPE_LABELS } from '@/lib/crm/types';
+import { SERVICE_TYPE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
 import AlertBadge from './AlertBadge';
 
 interface LeadCardProps {
@@ -52,6 +52,11 @@ export default function LeadCard({ lead, alerts }: LeadCardProps) {
 
   const daysUntil = getDaysUntilDeadline();
 
+  // Priority border class
+  const priorityBorderClass = lead.priority
+    ? `border-l-4 ${PRIORITY_CONFIG[lead.priority].borderClass}`
+    : '';
+
   return (
     <div
       ref={setNodeRef}
@@ -61,6 +66,7 @@ export default function LeadCard({ lead, alerts }: LeadCardProps) {
       className={`
         bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-grab
         hover:shadow-md hover:border-gray-300 transition-all
+        ${priorityBorderClass}
         ${isDragging ? 'opacity-50 shadow-lg rotate-2' : ''}
       `}
     >

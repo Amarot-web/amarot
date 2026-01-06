@@ -29,6 +29,14 @@ export type ActivityType =
 
 export type LeadType = 'lead' | 'opportunity';
 
+export type Priority = 'high' | 'medium' | 'low';
+
+export const PRIORITY_CONFIG = {
+  high: { label: 'Alta', color: '#DC2626', borderClass: 'border-l-red-500' },
+  medium: { label: 'Media', color: '#F59E0B', borderClass: 'border-l-amber-500' },
+  low: { label: 'Baja', color: '#22C55E', borderClass: 'border-l-green-500' },
+} as const;
+
 // ==================== LEAD STAGE ====================
 
 export interface LeadStage {
@@ -96,6 +104,7 @@ export interface Lead {
   probability: number;
   expectedRevenue: number;
   dateDeadline: Date | null;
+  priority: Priority | null;
   // Asignación
   userId: string | null;
   source: LeadSource;
@@ -141,6 +150,7 @@ export interface DbLead {
   probability: number;
   expected_revenue: number;
   date_deadline: string | null;
+  priority: string | null;
   user_id: string | null;
   source: LeadSource;
   source_message_id: string | null;

@@ -10,7 +10,7 @@ import {
   getLinkedDocuments,
   type LinkedDocument,
 } from '@/lib/crm/queries';
-import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/crm/types';
+import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
 import LeadActions from '@/components/crm/LeadActions';
 import ActivityList from '@/components/crm/ActivityList';
 import NoteList from '@/components/crm/NoteList';
@@ -91,6 +91,14 @@ export default async function LeadDetailPage({ params }: PageProps) {
                       }}
                     >
                       {lead.stage.displayName}
+                    </span>
+                  )}
+                  {lead.priority && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium text-white"
+                      style={{ backgroundColor: PRIORITY_CONFIG[lead.priority].color }}
+                    >
+                      Prioridad {PRIORITY_CONFIG[lead.priority].label}
                     </span>
                   )}
                 </div>

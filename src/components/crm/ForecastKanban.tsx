@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import type { Lead, ForecastColumn, AlertType } from '@/lib/crm/types';
-import { SERVICE_TYPE_LABELS } from '@/lib/crm/types';
+import { SERVICE_TYPE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
 import AlertBadge from './AlertBadge';
 
 interface ForecastKanbanProps {
@@ -23,10 +23,15 @@ function ForecastLeadCard({ lead, alerts }: { lead: Lead; alerts?: AlertType[] }
 
   const isWon = lead.stage?.isWon || false;
 
+  // Priority border class
+  const priorityBorderClass = lead.priority
+    ? `border-l-4 ${PRIORITY_CONFIG[lead.priority].borderClass}`
+    : '';
+
   return (
     <Link
       href={`/panel/crm/leads/${lead.id}`}
-      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all relative overflow-hidden"
+      className={`block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-gray-300 transition-all relative overflow-hidden ${priorityBorderClass}`}
     >
       {/* Etiqueta GANADO diagonal como en Odoo */}
       {isWon && (

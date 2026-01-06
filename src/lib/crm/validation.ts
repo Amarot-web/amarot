@@ -21,6 +21,8 @@ export const leadSourceSchema = z.enum([
   'other',
 ]);
 
+export const prioritySchema = z.enum(['high', 'medium', 'low']);
+
 export const leadFormSchema = z.object({
   company: z.string().min(2, 'La empresa debe tener al menos 2 caracteres'),
   contactName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -32,6 +34,7 @@ export const leadFormSchema = z.object({
   stageId: z.string().uuid().optional(),
   expectedRevenue: z.number().min(0, 'El valor debe ser positivo').optional(),
   dateDeadline: z.date().optional(),
+  priority: prioritySchema.optional().nullable(),
   userId: z.string().uuid().optional(),
   source: leadSourceSchema,
 });

@@ -529,6 +529,7 @@ function transformLead(data: DbLeadWithRelations): Lead {
     probability: data.probability,
     expectedRevenue: Number(data.expected_revenue) || 0,
     dateDeadline: data.date_deadline ? new Date(data.date_deadline) : null,
+    priority: data.priority as Lead['priority'],
     userId: data.user_id,
     source: data.source,
     sourceMessageId: data.source_message_id,

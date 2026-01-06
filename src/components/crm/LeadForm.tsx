@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createLead, updateLead, checkDuplicateLeads } from '@/lib/crm/actions';
-import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/crm/types';
-import type { Lead, LeadStage } from '@/lib/crm/types';
+import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
+import type { Lead, LeadStage, Priority } from '@/lib/crm/types';
 import DuplicateLeadModal from './DuplicateLeadModal';
 
 interface TeamMember {
@@ -353,6 +353,28 @@ export default function LeadForm({ lead, stages, teamMembers }: LeadFormProps) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+              Prioridad
+            </label>
+            <select
+              id="priority"
+              name="priority"
+              defaultValue={lead?.priority || ''}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-transparent"
+            >
+              <option value="">Sin prioridad</option>
+              {(Object.keys(PRIORITY_CONFIG) as Priority[]).map((key) => (
+                <option key={key} value={key}>
+                  {PRIORITY_CONFIG[key].label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              La prioridad se mostrará como un borde de color en la tarjeta del lead
+            </p>
           </div>
 
         </div>
