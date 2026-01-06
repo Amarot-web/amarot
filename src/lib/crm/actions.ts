@@ -667,6 +667,48 @@ export async function deleteNote(noteId: string): Promise<{ success: boolean; er
   return { success: true };
 }
 
+/**
+ * Actualiza una nota existente
+ */
+export async function updateNote(
+  noteId: string,
+  formData: FormData
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthUser();
+  if (!user) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  const content = formData.get('content') as string;
+  if (!content?.trim()) {
+    return { success: false, error: 'El contenido no puede estar vacío' };
+  }
+
+  const supabase = createAdminClient();
+
+  // Obtener el lead_id para revalidar
+  const { data: note } = await supabase
+    .from('lead_notes')
+    .select('lead_id')
+    .eq('id', noteId)
+    .single();
+
+  const { error } = await supabase
+    .from('lead_notes')
+    .update({ content: content.trim() })
+    .eq('id', noteId);
+
+  if (error) {
+    console.error('[updateNote] Error:', error);
+    return { success: false, error: 'Error al actualizar la nota' };
+  }
+
+  if (note?.lead_id) {
+    revalidatePath(`/panel/crm/leads/${note.lead_id}`);
+  }
+  return { success: true };
+}
+
 // ========================================
 // FASE 2: CONVERSIÓN DE MENSAJES
 // ========================================

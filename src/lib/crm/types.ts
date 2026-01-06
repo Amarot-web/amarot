@@ -552,6 +552,7 @@ export interface LeadsByService {
   serviceLabel: string;
   count: number;
   value: number;
+  weightedValue: number;  // Valor ponderado por probabilidad
   wonCount: number;
   conversionRate: number;
 }

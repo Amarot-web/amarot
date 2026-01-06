@@ -404,28 +404,53 @@ export async function getLeadNotes(leadId: string): Promise<LeadNote[]> {
 export async function getPipelineSummary(): Promise<PipelineStageSummary[]> {
   const supabase = createAdminClient();
 
-  const { data, error } = await supabase
-    .from('pipeline_summary')
-    .select('*')
+  // Obtener etapas activas
+  const { data: stages, error: stagesError } = await supabase
+    .from('lead_stages')
+    .select('id, name, display_name, color, position, probability, is_won, is_lost')
+    .eq('is_active', true)
     .order('position', { ascending: true });
 
-  if (error) {
-    console.error('[getPipelineSummary] Error:', error);
+  if (stagesError || !stages) {
+    console.error('[getPipelineSummary] Error:', stagesError);
     return [];
   }
 
-  return (data || []).map((row) => ({
-    stageId: row.stage_id,
-    stageName: row.stage_name,
-    displayName: row.display_name,
-    color: row.color,
-    position: row.position,
-    isWon: row.is_won,
-    isLost: row.is_lost,
-    leadCount: Number(row.lead_count) || 0,
-    totalRevenue: Number(row.total_revenue) || 0,
-    weightedRevenue: Number(row.weighted_revenue) || 0,
-  }));
+  // Obtener leads activos (sin lost_reason_id)
+  const { data: leads } = await supabase
+    .from('leads')
+    .select('id, stage_id, expected_revenue, probability')
+    .is('lost_reason_id', null);
+
+  // Agrupar leads por etapa
+  const leadsByStage = new Map<string, { count: number; revenue: number; weighted: number }>();
+  for (const lead of leads || []) {
+    if (!leadsByStage.has(lead.stage_id)) {
+      leadsByStage.set(lead.stage_id, { count: 0, revenue: 0, weighted: 0 });
+    }
+    const group = leadsByStage.get(lead.stage_id)!;
+    const revenue = Number(lead.expected_revenue) || 0;
+    const prob = Number(lead.probability) || 0;
+    group.count++;
+    group.revenue += revenue;
+    group.weighted += revenue * (prob / 100);
+  }
+
+  return stages.map((stage) => {
+    const stats = leadsByStage.get(stage.id) || { count: 0, revenue: 0, weighted: 0 };
+    return {
+      stageId: stage.id,
+      stageName: stage.name,
+      displayName: stage.display_name,
+      color: stage.color,
+      position: stage.position,
+      isWon: stage.is_won,
+      isLost: stage.is_lost,
+      leadCount: stats.count,
+      totalRevenue: stats.revenue,
+      weightedRevenue: Math.round(stats.weighted),
+    };
+  });
 }
 
 // ========================================
@@ -1113,32 +1138,34 @@ export async function getCRMMetrics(
     .gte('created_at', prevDateFrom.toISOString())
     .lte('created_at', prevDateTo.toISOString());
 
-  // Leads cerrados en período actual (para conversión y ciclo)
+  // Leads cerrados en período actual (ganados o perdidos)
+  // Los perdidos se identifican por lost_reason_id (no por stage_id)
   const { data: closedCurrent } = await supabase
     .from('leads')
-    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .select('id, expected_revenue, stage_id, lost_reason_id, created_at, date_closed')
     .gte('date_closed', dateFrom.toISOString())
-    .lte('date_closed', dateTo.toISOString())
-    .in('stage_id', closedStageIds);
+    .lte('date_closed', dateTo.toISOString());
 
   // Leads cerrados en período anterior
   const { data: closedPrev } = await supabase
     .from('leads')
-    .select('id, expected_revenue, stage_id, created_at, date_closed')
+    .select('id, expected_revenue, stage_id, lost_reason_id, created_at, date_closed')
     .gte('date_closed', prevDateFrom.toISOString())
-    .lte('date_closed', prevDateTo.toISOString())
-    .in('stage_id', closedStageIds);
+    .lte('date_closed', prevDateTo.toISOString());
 
-  // Leads activos (no cerrados) - para pipeline value
+  // Leads activos (sin date_closed y sin lost_reason_id)
   const { data: activeLeads } = await supabase
     .from('leads')
     .select('id, expected_revenue, probability, date_deadline')
-    .not('stage_id', 'in', `(${closedStageIds.join(',')})`);
+    .is('date_closed', null)
+    .is('lost_reason_id', null);
 
   // Calcular métricas período actual
   const totalLeads = currentLeads?.length || 0;
+  // Ganados: etapa con is_won = true
   const wonCurrent = (closedCurrent || []).filter((l) => wonStageIds.includes(l.stage_id));
-  const lostCurrent = (closedCurrent || []).filter((l) => lostStageIds.includes(l.stage_id));
+  // Perdidos: tienen lost_reason_id (independiente de la etapa)
+  const lostCurrent = (closedCurrent || []).filter((l) => l.lost_reason_id !== null);
 
   const wonLeads = wonCurrent.length;
   const lostLeads = lostCurrent.length;
@@ -1385,6 +1412,61 @@ export async function getLeadsBySource(
 }
 
 /**
+ * Obtiene leads agrupados por fuente SOLO del pipeline activo
+ * (excluye ganados y perdidos)
+ */
+export async function getSourcePipeline(): Promise<LeadsBySource[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas activas (no won, no lost)
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, is_won, is_lost');
+
+  const activeStageIds = (stagesData || [])
+    .filter((s) => !s.is_won && !s.is_lost)
+    .map((s) => s.id);
+
+  if (activeStageIds.length === 0) {
+    return [];
+  }
+
+  // Query solo leads en etapas activas Y sin lost_reason_id
+  const { data: leads } = await supabase
+    .from('leads')
+    .select('id, source, expected_revenue')
+    .in('stage_id', activeStageIds)
+    .is('lost_reason_id', null);
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  // Agrupar por fuente
+  const groups = new Map<LeadSource, { count: number; value: number }>();
+
+  for (const lead of leads) {
+    const source = lead.source as LeadSource;
+    if (!groups.has(source)) {
+      groups.set(source, { count: 0, value: 0 });
+    }
+
+    const group = groups.get(source)!;
+    group.count++;
+    group.value += Number(lead.expected_revenue) || 0;
+  }
+
+  return Array.from(groups.entries()).map(([source, data]) => ({
+    source,
+    sourceLabel: LEAD_SOURCE_LABELS[source] || source,
+    count: data.count,
+    value: data.value,
+    wonCount: 0, // No aplica para pipeline activo
+    conversionRate: 0, // No aplica para pipeline activo
+  }));
+}
+
+/**
  * Obtiene leads agrupados por tipo de servicio
  */
 export async function getLeadsByService(
@@ -1441,8 +1523,69 @@ export async function getLeadsByService(
     serviceLabel: SERVICE_TYPE_LABELS[serviceType] || serviceType,
     count: data.count,
     value: data.value,
+    weightedValue: 0, // No calculado en esta función
     wonCount: data.wonCount,
     conversionRate: data.count > 0 ? Math.round((data.wonCount / data.count) * 100) : 0,
+  }));
+}
+
+/**
+ * Obtiene leads agrupados por tipo de servicio SOLO del pipeline activo
+ * (excluye ganados y perdidos)
+ */
+export async function getServiceTypePipeline(): Promise<LeadsByService[]> {
+  const supabase = createAdminClient();
+
+  // Obtener etapas activas (no won, no lost) con su probabilidad
+  const { data: stagesData } = await supabase
+    .from('lead_stages')
+    .select('id, probability, is_won, is_lost');
+
+  const activeStages = (stagesData || []).filter((s) => !s.is_won && !s.is_lost);
+  const activeStageIds = activeStages.map((s) => s.id);
+  const stageProbability = new Map(activeStages.map((s) => [s.id, s.probability / 100]));
+
+  if (activeStageIds.length === 0) {
+    return [];
+  }
+
+  // Query solo leads en etapas activas Y sin lost_reason_id
+  const { data: leads } = await supabase
+    .from('leads')
+    .select('id, service_type, expected_revenue, stage_id')
+    .in('stage_id', activeStageIds)
+    .is('lost_reason_id', null);
+
+  if (!leads || leads.length === 0) {
+    return [];
+  }
+
+  // Agrupar por servicio
+  const groups = new Map<ServiceType, { count: number; value: number; weightedValue: number }>();
+
+  for (const lead of leads) {
+    const serviceType = lead.service_type as ServiceType;
+    if (!groups.has(serviceType)) {
+      groups.set(serviceType, { count: 0, value: 0, weightedValue: 0 });
+    }
+
+    const group = groups.get(serviceType)!;
+    const revenue = Number(lead.expected_revenue) || 0;
+    const probability = stageProbability.get(lead.stage_id) || 0;
+
+    group.count++;
+    group.value += revenue;
+    group.weightedValue += revenue * probability;
+  }
+
+  return Array.from(groups.entries()).map(([serviceType, data]) => ({
+    serviceType,
+    serviceLabel: SERVICE_TYPE_LABELS[serviceType] || serviceType,
+    count: data.count,
+    value: data.value,
+    weightedValue: Math.round(data.weightedValue),
+    wonCount: 0, // No aplica para pipeline activo
+    conversionRate: 0, // No aplica para pipeline activo
   }));
 }
 

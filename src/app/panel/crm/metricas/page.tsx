@@ -5,6 +5,8 @@ import {
   getCRMMetrics,
   getLeadsByPeriod,
   getLeadsBySource,
+  getSourcePipeline,
+  getServiceTypePipeline,
   getPipelineSummary,
 } from '@/lib/crm/queries';
 import MetricsDashboard from './MetricsDashboard';
@@ -54,10 +56,12 @@ export default async function MetricasPage({ searchParams }: PageProps) {
   }
 
   // Obtener datos en paralelo
-  const [metrics, trendData, sourceData, pipelineData] = await Promise.all([
+  const [metrics, trendData, sourceData, sourcePerformanceData, serviceTypeData, pipelineData] = await Promise.all([
     getCRMMetrics(dateFrom, dateTo),
     getLeadsByPeriod(groupBy, dateFrom, dateTo),
+    getSourcePipeline(),
     getLeadsBySource(dateFrom, dateTo),
+    getServiceTypePipeline(),
     getPipelineSummary(),
   ]);
 
@@ -119,6 +123,8 @@ export default async function MetricasPage({ searchParams }: PageProps) {
         metrics={metrics}
         trendData={trendData}
         sourceData={sourceData}
+        sourcePerformanceData={sourcePerformanceData}
+        serviceTypeData={serviceTypeData}
         pipelineData={pipelineData}
       />
     </div>
