@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Open_Sans } from "next/font/google";
 import { Toaster } from "sonner";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${barlowCondensed.variable} ${openSans.variable} antialiased`}>
+        <GoogleAnalytics />
         {children}
         <Toaster position="top-right" richColors closeButton />
       </body>

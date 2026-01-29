@@ -32,12 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
-# documentación interna
-/docs
+# documentación interna (archivos antiguos)
+/docs/DIAGNOSTICO-WEB.md
+/docs/diagnostico-web-amarot.md
+/docs/PLAN-WEB.md
 Antecedentes.md
 Claude.md
 planSEO.md
@@ -55,3 +58,7 @@ next-env.d.ts
 
 # supabase temp
 supabase/.temp/
+
+# archivos de migración (generados para entrega, no commitear)
+supabase/export/
+supabase/*.zip
