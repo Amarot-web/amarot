@@ -1,17 +1,6 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedPosts, getPostsByTag, getTags } from "@/lib/blog/queries";
 import AnimatedSection from "@/components/AnimatedSection";
-
-export const metadata: Metadata = {
-  title: "Blog | AMAROT Perú",
-  description: "Artículos y guías técnicas sobre perforación diamantina, anclajes químicos, detección de metales y soluciones para construcción en Perú.",
-  openGraph: {
-    title: "Blog | AMAROT Perú",
-    description: "Artículos y guías técnicas sobre perforación diamantina, anclajes químicos, detección de metales y soluciones para construcción en Perú.",
-    type: "website",
-  },
-};
 
 interface Props {
   searchParams: Promise<{ page?: string; tag?: string }>;

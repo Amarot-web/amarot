@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getPublishedPosts } from '@/lib/blog/queries';
 
-const BASE_URL = 'https://amarot.pe';
+const BASE_URL = 'https://amarotperu.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Slugs de servicios

@@ -28,9 +28,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: service.metaTitle,
     description: service.metaDescription,
+    keywords: [
+      service.shortTitle,
+      `${service.shortTitle} Lima`,
+      `${service.shortTitle} Perú`,
+      'HILTI',
+      'construcción',
+    ],
+    alternates: {
+      canonical: `https://amarotperu.com/servicios/${slug}`,
+    },
     openGraph: {
       title: service.metaTitle,
       description: service.metaDescription,
+      url: `https://amarotperu.com/servicios/${slug}`,
+      siteName: 'AMAROT Perú',
       type: 'website',
       locale: 'es_PE',
       images: [
@@ -41,6 +53,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           alt: service.title,
         },
       ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: service.metaTitle,
+      description: service.metaDescription,
+      images: [service.image],
     },
   };
 }
