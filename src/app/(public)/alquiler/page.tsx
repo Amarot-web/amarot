@@ -68,7 +68,7 @@ export default function AlquilerPage() {
         <div className="absolute inset-0">
           <img
             src="/images/alquiler-hero.jpg"
-            alt=""
+            alt="Equipos HILTI disponibles para alquiler en Lima"
             className="w-full h-full object-cover"
           />
           {/* Dark overlay */}

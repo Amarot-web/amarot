@@ -204,7 +204,7 @@ export default function ServiciosPage() {
 
                     {/* Ícono */}
                     <div className="absolute bottom-4 left-4 w-10 h-10 bg-white/90 rounded-lg flex items-center justify-center">
-                      <img src={service.icon} alt="" className="w-6 h-6" style={{ filter: 'invert(15%) sepia(50%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(95%)' }} />
+                      <img src={service.icon} alt={`Icono de ${service.title}`} className="w-6 h-6" style={{ filter: 'invert(15%) sepia(50%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(95%)' }} />
                     </div>
                   </div>
 

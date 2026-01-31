@@ -115,7 +115,7 @@ export default function Home() {
                     <div className="absolute top-4 right-4 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                       <img
                         src={service.icon}
-                        alt=""
+                        alt={`Icono de ${service.title}`}
                         className="w-7 h-7"
                         style={{ filter: 'brightness(0) invert(1)' }}
                       />
