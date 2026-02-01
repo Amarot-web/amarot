@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -9,6 +9,32 @@ import { usePermissions } from '@/hooks/usePermissions';
 import type { AuthUser, PermissionName } from '@/types/auth';
 import { ROLE_LABELS } from '@/types/auth';
 import { useSidebar } from './SidebarContext';
+
+// Hook para obtener el conteo de mensajes no leídos
+function useUnreadMessages() {
+  const [count, setCount] = useState(0);
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/messages/unread-count');
+      if (res.ok) {
+        const data = await res.json();
+        setCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCount();
+    // Actualizar cada 30 segundos
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [fetchCount]);
+
+  return count;
+}
 
 interface PanelSidebarProps {
   user: AuthUser;
@@ -196,6 +222,25 @@ export default function PanelSidebar({ user }: PanelSidebarProps) {
   const { isCollapsed, toggleCollapse } = useSidebar();
   const [isDesktop, setIsDesktop] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['crm']));
+  const unreadMessages = useUnreadMessages();
+
+  // Crear grupos de navegación con badge dinámico
+  const navGroups = useMemo(() => {
+    return navigationGroups.map(group => {
+      if (group.id === 'crm') {
+        return {
+          ...group,
+          items: group.items.map(item => {
+            if (item.href === '/panel/mensajes' && unreadMessages > 0) {
+              return { ...item, badge: unreadMessages };
+            }
+            return item;
+          }),
+        };
+      }
+      return group;
+    });
+  }, [unreadMessages]);
 
   // Detectar si estamos en desktop
   useEffect(() => {
@@ -515,7 +560,7 @@ export default function PanelSidebar({ user }: PanelSidebarProps) {
 
           {/* Grupos de navegación */}
           <nav className={`flex-1 ${showCollapsed ? 'px-2 overflow-visible' : 'px-3 overflow-y-auto'} space-y-1`}>
-            {navigationGroups.map(renderNavGroup)}
+            {navGroups.map(renderNavGroup)}
           </nav>
 
           {/* Footer */}
