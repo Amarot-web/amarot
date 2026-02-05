@@ -18,10 +18,10 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "AMAROT Perú - Perforación Diamantina y Anclajes Químicos Lima",
+    default: "AMAROT Perú - Perforación Diamantina y anclajes químicos",
     template: "%s | AMAROT Perú",
   },
-  description: "Empresa peruana especializada en perforación diamantina, anclajes químicos, sellos cortafuegos y detección de metales. +20 años de experiencia con equipos Hilti en Lima y todo el Perú.",
+  description: "Empresa peruana con más de 20 años de experiencia especializada en perforaciones diamantinas, anclajes químicos y alquiler de equipos HILTI.",
   keywords: [
     "perforación diamantina Lima",
     "anclajes químicos Perú",
@@ -44,22 +44,22 @@ export const metadata: Metadata = {
     locale: "es_PE",
     url: "https://amarotperu.com",
     siteName: "AMAROT Perú",
-    title: "AMAROT Perú - Perforación Diamantina y Anclajes Químicos Lima",
-    description: "Empresa peruana especializada en perforación diamantina, anclajes químicos, sellos cortafuegos y detección de metales. +20 años de experiencia con equipos Hilti.",
+    title: "AMAROT Perú - Perforación Diamantina y anclajes químicos",
+    description: "Empresa peruana con más de 20 años de experiencia especializada en perforaciones diamantinas, anclajes químicos y alquiler de equipos HILTI.",
     images: [
       {
-        url: "/images/hero-bg.jpg",
+        url: "/images/og-amarot-final.png",
         width: 1200,
         height: 630,
-        alt: "AMAROT Perú - Expertos en perforación diamantina y anclajes químicos",
+        alt: "AMAROT Perú - Perforación Diamantina y anclajes químicos",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AMAROT Perú - Perforación Diamantina y Anclajes Químicos",
-    description: "Empresa peruana especializada en perforación diamantina, anclajes químicos y equipos Hilti. +20 años de experiencia.",
-    images: ["/images/hero-bg.jpg"],
+    title: "AMAROT Perú - Perforación Diamantina y anclajes químicos",
+    description: "Empresa peruana con más de 20 años de experiencia especializada en perforaciones diamantinas, anclajes químicos y alquiler de equipos HILTI.",
+    images: ["/images/og-amarot-final.png"],
   },
   robots: {
     index: true,
