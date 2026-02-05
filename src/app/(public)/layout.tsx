@@ -7,65 +7,105 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const organizationJsonLd = {
+  const localBusinessJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://amarotperu.com/#organization",
+    "@type": "LocalBusiness",
+    "@id": "https://amarotperu.com/#localbusiness",
     name: "AMAROT PERÚ SAC",
     alternateName: "AMAROT",
     url: "https://amarotperu.com",
-    logo: {
-      "@type": "ImageObject",
-      url: "https://amarotperu.com/images/logo.png",
-      width: 400,
-      height: 100,
-    },
-    image: "https://amarotperu.com/images/hero-bg.jpg",
+    logo: "https://amarotperu.com/images/logo.png",
+    image: "https://amarotperu.com/images/og-amarot-final.png",
     description:
-      "Empresa peruana especializada en perforación diamantina, anclajes químicos, sellos cortafuego y detección de metales. +20 años de experiencia con equipos HILTI.",
+      "Empresa peruana con más de 20 años de experiencia especializada en perforaciones diamantinas, anclajes químicos y alquiler de equipos HILTI.",
     telephone: "+51 987 640 479",
-    email: "contacto@amarotperu.com",
+    email: ["j.amado@amarotperu.com", "g.amado@amarotperu.com"],
     address: {
       "@type": "PostalAddress",
       addressLocality: "Lima",
       addressRegion: "Lima",
       addressCountry: "PE",
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: -12.0464,
-      longitude: -77.0428,
-    },
-    areaServed: {
-      "@type": "Country",
-      name: "Perú",
-    },
-    sameAs: [
-      "https://www.facebook.com/amarotperu",
-      "https://www.linkedin.com/company/amarotperu",
+    areaServed: [
+      {
+        "@type": "City",
+        name: "Lima",
+      },
+      {
+        "@type": "Country",
+        name: "Perú",
+      },
     ],
-    serviceType: [
-      "Perforación diamantina",
-      "Anclajes químicos",
-      "Sellos cortafuego",
-      "Detección de metales",
-      "Pruebas de anclaje",
-      "Alquiler de equipos HILTI",
-    ],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Servicios de construcción especializada",
+      itemListElement: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Perforación Diamantina",
+            description: "Perforaciones de alta precisión en concreto armado con equipos HILTI",
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Anclajes Químicos",
+            description: "Fijación estructural con adhesivos químicos HILTI",
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Alquiler de Equipos HILTI",
+            description: "Alquiler de equipos profesionales HILTI para construcción",
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Sellos Cortafuego",
+            description: "Sellado de penetraciones y compartimentación contra fuego",
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Detección de Metales",
+            description: "Escaneo de estructuras con detectores HILTI",
+          },
+        },
+      ],
+    },
     priceRange: "$$",
-    openingHoursSpecification: {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      opens: "08:00",
-      closes: "18:00",
-    },
+    currenciesAccepted: "PEN",
+    paymentAccepted: "Efectivo, Transferencia bancaria",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        opens: "08:00",
+        closes: "18:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: "Saturday",
+        opens: "08:00",
+        closes: "13:00",
+      },
+    ],
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
       />
       <Header />
       <main className="pt-20">
