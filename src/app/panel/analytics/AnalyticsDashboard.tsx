@@ -182,29 +182,74 @@ export default function AnalyticsDashboard() {
 
       {/* Chart */}
       <div className="p-6 bg-white border border-gray-100 rounded-xl shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Visitas últimos 14 días
         </h2>
-        <div className="h-48 flex items-end gap-1">
-          {data.daily.map((day) => (
-            <div
-              key={day.date}
-              className="flex-1 flex flex-col items-center gap-2"
-            >
-              <div
-                className="w-full bg-[#1E3A8A]/20 hover:bg-[#1E3A8A]/30 rounded-t transition-colors relative group"
-                style={{
-                  height: `${(day.pageViews / maxPageViews) * 100}%`,
-                  minHeight: '4px',
-                }}
-              >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                  {day.pageViews} vistas
-                </div>
+        <div className="flex">
+          {/* Y-axis labels */}
+          <div className="flex flex-col justify-between h-40 pr-3 text-right">
+            <span className="text-xs text-gray-500">{maxPageViews}</span>
+            <span className="text-xs text-gray-500">{Math.round(maxPageViews * 0.75)}</span>
+            <span className="text-xs text-gray-500">{Math.round(maxPageViews * 0.5)}</span>
+            <span className="text-xs text-gray-500">{Math.round(maxPageViews * 0.25)}</span>
+            <span className="text-xs text-gray-500">0</span>
+          </div>
+
+          {/* Chart area */}
+          <div className="flex-1 relative">
+            <div className="h-40 border-l border-b border-gray-200 relative">
+              {/* Grid lines */}
+              <div className="absolute inset-0">
+                <div className="absolute w-full border-t border-gray-100" style={{ top: '0%' }} />
+                <div className="absolute w-full border-t border-gray-100" style={{ top: '25%' }} />
+                <div className="absolute w-full border-t border-gray-100" style={{ top: '50%' }} />
+                <div className="absolute w-full border-t border-gray-100" style={{ top: '75%' }} />
               </div>
-              <span className="text-xs text-gray-400">{formatDate(day.date)}</span>
+
+              {/* SVG Line */}
+              <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline
+                  points={data.daily.map((day, i) => {
+                    const x = (i / (data.daily.length - 1)) * 100;
+                    const y = 100 - (day.pageViews / maxPageViews) * 100;
+                    return `${x},${y}`;
+                  }).join(' ')}
+                  fill="none"
+                  stroke="#1E3A8A"
+                  strokeWidth="1.5"
+                  vectorEffect="non-scaling-stroke"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
+
+              {/* Data points */}
+              {data.daily.map((day, i) => {
+                const leftPercent = (i / (data.daily.length - 1)) * 100;
+                const topPercent = 100 - (day.pageViews / maxPageViews) * 100;
+                return (
+                  <div
+                    key={day.date}
+                    className="absolute w-3 h-3 -ml-1.5 -mt-1.5 bg-[#1E3A8A] rounded-full border-2 border-white shadow group cursor-pointer"
+                    style={{ left: `${leftPercent}%`, top: `${topPercent}%` }}
+                  >
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      {day.pageViews} vistas
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+
+            {/* X-axis labels */}
+            <div className="flex justify-between mt-2">
+              {data.daily.map((day, i) => (
+                <span key={day.date} className="text-xs text-gray-500">
+                  {formatDate(day.date)}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
