@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS quotation_items (
   working_height DECIMAL(4,2),
 
   -- Cantidades y precios
-  quantity INTEGER DEFAULT 1,
-  unit TEXT DEFAULT 'unit' CHECK (unit IN ('unit', 'meter', 'sqm', 'hour', 'day')),
+  quantity DECIMAL(10,2) DEFAULT 1,  -- Permite decimales (ej: 2.5 metros)
+  unit TEXT DEFAULT 'und',  -- Flexible: cm, und, m², día, kg, cart, pase, pto, viaje, evento, sesión, factor, etc.
   unit_price DECIMAL(10,2) DEFAULT 0,
   total_price DECIMAL(12,2) DEFAULT 0
 );
