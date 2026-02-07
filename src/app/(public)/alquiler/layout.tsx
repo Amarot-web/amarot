@@ -49,52 +49,75 @@ export default function AlquilerLayout({
 }) {
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'OfferCatalog',
+    '@type': 'ItemList',
     name: 'Alquiler de Equipos HILTI',
     description:
       'Catálogo de equipos HILTI disponibles para alquiler en Lima y Perú',
     url: 'https://amarotperu.com/alquiler',
-    provider: {
-      '@type': 'LocalBusiness',
-      name: 'AMAROT PERÚ SAC',
-      telephone: '+51 987 640 479',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Lima',
-        addressCountry: 'PE',
-      },
-    },
+    numberOfItems: 4,
     itemListElement: [
       {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Product',
-          name: 'Perforadoras Diamantinas HILTI',
-          category: 'Perforación',
+        '@type': 'ListItem',
+        position: 1,
+        item: {
+          '@type': 'Service',
+          '@id': 'https://amarotperu.com/alquiler#perforadoras',
+          name: 'Alquiler de Perforadoras Diamantinas HILTI',
+          description: 'Servicio de alquiler de perforadoras diamantinas HILTI para obras de construcción en Lima',
+          provider: {
+            '@type': 'LocalBusiness',
+            name: 'AMAROT PERÚ SAC',
+          },
+          areaServed: 'Lima, Perú',
+          serviceType: 'Alquiler de equipos de construcción',
         },
       },
       {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Product',
-          name: 'Rotomartillos HILTI',
-          category: 'Perforación y demolición',
+        '@type': 'ListItem',
+        position: 2,
+        item: {
+          '@type': 'Service',
+          '@id': 'https://amarotperu.com/alquiler#rotomartillos',
+          name: 'Alquiler de Rotomartillos HILTI',
+          description: 'Servicio de alquiler de rotomartillos HILTI para perforación y demolición en Lima',
+          provider: {
+            '@type': 'LocalBusiness',
+            name: 'AMAROT PERÚ SAC',
+          },
+          areaServed: 'Lima, Perú',
+          serviceType: 'Alquiler de equipos de construcción',
         },
       },
       {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Product',
-          name: 'Demoledores HILTI',
-          category: 'Demolición',
+        '@type': 'ListItem',
+        position: 3,
+        item: {
+          '@type': 'Service',
+          '@id': 'https://amarotperu.com/alquiler#demoledores',
+          name: 'Alquiler de Demoledores HILTI',
+          description: 'Servicio de alquiler de demoledores eléctricos HILTI para obras de demolición en Lima',
+          provider: {
+            '@type': 'LocalBusiness',
+            name: 'AMAROT PERÚ SAC',
+          },
+          areaServed: 'Lima, Perú',
+          serviceType: 'Alquiler de equipos de construcción',
         },
       },
       {
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Product',
-          name: 'Detectores de Metal HILTI',
-          category: 'Detección',
+        '@type': 'ListItem',
+        position: 4,
+        item: {
+          '@type': 'Service',
+          '@id': 'https://amarotperu.com/alquiler#detectores',
+          name: 'Alquiler de Detectores de Metal HILTI',
+          description: 'Servicio de alquiler de detectores de metal y escáneres HILTI para localización de armaduras en Lima',
+          provider: {
+            '@type': 'LocalBusiness',
+            name: 'AMAROT PERÚ SAC',
+          },
+          areaServed: 'Lima, Perú',
+          serviceType: 'Alquiler de equipos de construcción',
         },
       },
     ],

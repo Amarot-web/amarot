@@ -87,7 +87,7 @@ export default async function MetricasPage({ searchParams }: PageProps) {
         </nav>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-gray-900">
               Métricas del CRM
             </h1>
             <p className="text-gray-500 mt-1">

@@ -118,7 +118,7 @@ export default function NuevoMiembroPage() {
           </svg>
           Volver al equipo
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Invitar Nuevo Miembro</h1>
+        <h1 className="text-xl font-bold text-gray-900">Invitar Nuevo Miembro</h1>
         <p className="text-gray-500 mt-1">
           Crea una cuenta para un nuevo miembro del equipo
         </p>

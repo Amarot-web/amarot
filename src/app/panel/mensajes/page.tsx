@@ -99,7 +99,7 @@ export default async function MensajesPage({
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mensajes de Contacto</h1>
+        <h1 className="text-xl font-bold text-gray-900">Mensajes de Contacto</h1>
         <p className="text-gray-500 mt-1">
           Gestiona los mensajes recibidos desde el formulario de contacto
         </p>

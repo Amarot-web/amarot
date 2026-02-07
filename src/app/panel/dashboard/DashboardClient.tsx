@@ -93,7 +93,7 @@ function MetricCard({ label, value, change, changeLabel, icon, href, delay = 0 }
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900 tracking-tight">{value}</p>
+          <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
           {/* Always reserve space for change indicator */}
           <div className="mt-2 h-5 flex items-center gap-1">
             {change !== undefined && change !== 0 && (
@@ -430,7 +430,7 @@ export default function DashboardClient({
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">
             Dashboard
           </h1>
           <p className="text-gray-500 mt-1">

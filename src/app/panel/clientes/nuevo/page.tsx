@@ -64,7 +64,7 @@ export default function NuevoClientePage() {
           </svg>
           Volver a Clientes
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Nuevo Cliente</h1>
+        <h1 className="text-xl font-bold text-gray-900 mt-2">Nuevo Cliente</h1>
       </div>
 
       {error && (

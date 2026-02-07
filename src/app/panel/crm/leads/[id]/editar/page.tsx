@@ -39,7 +39,7 @@ export default async function EditLeadPage({ params }: PageProps) {
           </svg>
           <span className="text-gray-900">Editar</span>
         </nav>
-        <h1 className="text-2xl font-bold text-gray-900">Editar Lead</h1>
+        <h1 className="text-xl font-bold text-gray-900">Editar Lead</h1>
         <p className="text-gray-500 mt-1">
           {lead.company} - {lead.contactName}
         </p>

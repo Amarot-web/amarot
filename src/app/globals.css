@@ -342,6 +342,35 @@ html {
 }
 
 /* ================================================
+   Panel Admin - Override global heading styles
+   ================================================ */
+.panel-content h1,
+.panel-content h2,
+.panel-content h3,
+.panel-content h4,
+.panel-content h5,
+.panel-content h6 {
+  font-family: var(--font-body), 'Open Sans', sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.panel-content h1 {
+  font-size: 1.25rem; /* text-xl = 20px */
+  line-height: 1.75rem;
+}
+
+.panel-content h2 {
+  font-size: 1.125rem; /* text-lg = 18px */
+  line-height: 1.75rem;
+}
+
+.panel-content h3 {
+  font-size: 1rem; /* text-base = 16px */
+  line-height: 1.5rem;
+}
+
+/* ================================================
    TipTap Editor Styles
    ================================================ */
 

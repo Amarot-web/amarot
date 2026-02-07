@@ -26,7 +26,7 @@ export default function PanelMain({ children }: { children: React.ReactNode }) {
         showCollapsed ? 'lg:pl-20' : 'lg:pl-64'
       }`}
     >
-      <div className="p-6">{children}</div>
+      <div className="p-6 panel-content">{children}</div>
     </main>
   );
 }

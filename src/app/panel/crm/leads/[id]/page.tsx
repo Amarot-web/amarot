@@ -102,7 +102,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">{lead.company}</h1>
+                <h1 className="text-xl font-bold text-gray-900">{lead.company}</h1>
                 <p className="text-gray-600">{lead.contactName}</p>
               </div>
               <Link

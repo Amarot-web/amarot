@@ -84,7 +84,7 @@ export default async function EquipoPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Equipo</h1>
+          <h1 className="text-xl font-bold text-gray-900">Equipo</h1>
           <p className="text-gray-500 mt-1">
             Gestiona los miembros del equipo y sus permisos
           </p>

@@ -21,7 +21,7 @@ export default async function NuevoLeadPage() {
           </svg>
           <span className="text-gray-900">Nuevo Lead</span>
         </nav>
-        <h1 className="text-2xl font-bold text-gray-900">Crear Nuevo Lead</h1>
+        <h1 className="text-xl font-bold text-gray-900">Crear Nuevo Lead</h1>
         <p className="text-gray-500 mt-1">
           Registra una nueva oportunidad de negocio
         </p>

@@ -110,7 +110,7 @@ export default function EditarClientePage({ params }: PageProps) {
           </svg>
           Volver al Cliente
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Editar Cliente</h1>
+        <h1 className="text-xl font-bold text-gray-900 mt-2">Editar Cliente</h1>
       </div>
 
       {error && (
