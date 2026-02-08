@@ -345,7 +345,7 @@ export default function QuotationPDF({ data }: QuotationPDFProps) {
             <Text style={styles.clientDetail}>RUC: 20601234567</Text>
             <Text style={styles.clientDetail}>Jr. Los Tallanes 123, Lima</Text>
             <Text style={styles.clientDetail}>Tel: (01) 234-5678</Text>
-            <Text style={styles.clientDetail}>info@amarot.pe</Text>
+            <Text style={styles.clientDetail}>info@amarotperu.com</Text>
           </View>
         </View>
 
@@ -451,7 +451,7 @@ export default function QuotationPDF({ data }: QuotationPDFProps) {
         {/* Footer */}
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            AMAROT PERU S.A.C. | www.amarot.pe | info@amarot.pe
+            AMAROT PERU S.A.C. | www.amarotperu.com | info@amarotperu.com
           </Text>
           <Text
             style={styles.footerPage}

@@ -37,6 +37,62 @@ const nextConfig: NextConfig = {
         destination: '/blog/:slug',
         permanent: true,
       },
+      // URLs legacy de WordPress - patrones comunes que generan 404
+      {
+        source: '/category/:path*',
+        destination: '/blog',
+        permanent: true,
+      },
+      {
+        source: '/author/:path*',
+        destination: '/blog',
+        permanent: true,
+      },
+      {
+        source: '/tag/:path*',
+        destination: '/blog',
+        permanent: true,
+      },
+      {
+        source: '/feed/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/feed',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/wp-content/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/wp-admin/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/wp-login.php',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/:file(wp-[\\w-]+\\.php)',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/elementor-hf/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/page/:path*',
+        destination: '/',
+        permanent: true,
+      },
     ];
   },
 };

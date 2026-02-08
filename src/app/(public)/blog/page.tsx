@@ -1,9 +1,34 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedPosts, getPostsByTag, getTags } from "@/lib/blog/queries";
 import AnimatedSection from "@/components/AnimatedSection";
 
 interface Props {
   searchParams: Promise<{ page?: string; tag?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const hasPagination = !!params.page && params.page !== "1";
+  const hasTag = !!params.tag;
+
+  // Páginas con paginación o filtro por tag → noindex para evitar contenido duplicado
+  if (hasPagination || hasTag) {
+    return {
+      title: hasTag
+        ? `Artículos sobre ${params.tag} | Blog AMAROT`
+        : `Blog - Página ${params.page} | AMAROT Perú`,
+      robots: { index: false, follow: true },
+    };
+  }
+
+  return {
+    title: "Blog | AMAROT Perú",
+    description: "Guías técnicas, consejos prácticos y novedades del sector construcción en Perú",
+    alternates: {
+      canonical: "https://amarotperu.com/blog",
+    },
+  };
 }
 
 export default async function BlogPage({ searchParams }: Props) {

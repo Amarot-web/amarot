@@ -54,7 +54,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       images: post.ogImageUrl ? [post.ogImageUrl] : undefined,
     },
     robots: isPreview ? { index: false, follow: false } : (post.noindex ? { index: false, follow: true } : undefined),
-    alternates: post.canonicalUrl ? { canonical: post.canonicalUrl } : undefined,
+    alternates: {
+      canonical: post.canonicalUrl || `https://amarotperu.com/blog/${slug}`,
+    },
   };
 }
 
@@ -106,12 +108,12 @@ export default async function BlogPostPage({ params, searchParams }: Props) {
       name: 'AMAROT PERÚ SAC',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://amarot.com.pe/images/logo-amarot.png',
+        url: 'https://amarotperu.com/images/logo-amarot.png',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://amarot.com.pe/blog/${post.slug}`,
+      '@id': `https://amarotperu.com/blog/${post.slug}`,
     },
   };
 
