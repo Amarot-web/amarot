@@ -81,6 +81,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       paymentTerms,
       notes,
       status,
+      conditions,
     } = body;
 
     // Update or create client
@@ -113,7 +114,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             contact_name: clientName,
             ruc: clientRuc || null,
             contact_email: clientEmail || null,
-            contact_phone: clientPhone || null,
+            contact_phone: clientPhone || '-',
             address: clientAddress || null,
           })
           .select('id')
@@ -143,6 +144,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         validity_date: validityDate.toISOString().split('T')[0],
         payment_terms: paymentTerms || 'Contado',
         notes: [deliveryTime, notes].filter(Boolean).join('\n'),
+        conditions: conditions || [],
         updated_at: new Date().toISOString(),
         sent_at: status === 'sent' ? new Date().toISOString() : null,
       })

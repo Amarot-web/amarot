@@ -3,6 +3,14 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import {
+  CONDITION_TEMPLATES,
+  CONDITION_PRESETS,
+  generateDefaultConditions,
+  type ConditionBlock,
+  type ConditionTemplate,
+} from '@/lib/condition-templates';
+import QuotationDocument, { type QuotationDocumentData } from './QuotationDocument';
 
 // ============================================================================
 // TYPES
@@ -148,6 +156,7 @@ interface InitialData {
   validityDays?: number;
   paymentTerms?: string;
   notes?: string;
+  conditions?: ConditionBlock[];
 }
 
 interface QuotationBuilderProps {
@@ -198,7 +207,12 @@ export default function QuotationBuilder({
   const [validityDays, setValidityDays] = useState(initialData?.validityDays || 15);
   const [paymentTerms, setPaymentTerms] = useState(initialData?.paymentTerms || 'Contado');
   const [notes, setNotes] = useState(initialData?.notes || '');
-  const [mobileTab, setMobileTab] = useState<'catalog' | 'items'>('catalog');
+  const [mobileTab, setMobileTab] = useState<'catalog' | 'items' | 'conditions'>('catalog');
+  // Condiciones
+  const [conditions, setConditions] = useState<ConditionBlock[]>(initialData?.conditions || []);
+  const [showConditionPicker, setShowConditionPicker] = useState(false);
+  const [editingConditionIdx, setEditingConditionIdx] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const clientInputRef = useRef<HTMLDivElement>(null);
 
@@ -262,6 +276,48 @@ export default function QuotationBuilder({
     setItems(prev => prev.filter(i => i.id !== itemId));
   }, []);
 
+  // Condition handlers
+  const addConditionBlock = useCallback((block: ConditionBlock) => {
+    setConditions(prev => {
+      if (prev.some(c => c.id === block.id)) {
+        toast('Esta condición ya está agregada', { duration: 1500 });
+        return prev;
+      }
+      return [...prev, { ...block }];
+    });
+  }, []);
+
+  const removeCondition = useCallback((idx: number) => {
+    setConditions(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const updateConditionContent = useCallback((idx: number, content: string) => {
+    setConditions(prev => prev.map((c, i) => i === idx ? { ...c, content } : c));
+  }, []);
+
+  const updateConditionTitle = useCallback((idx: number, title: string) => {
+    setConditions(prev => prev.map((c, i) => i === idx ? { ...c, title } : c));
+  }, []);
+
+  const applyPreset = useCallback((presetId: string) => {
+    const preset = CONDITION_PRESETS.find(p => p.id === presetId);
+    if (!preset) return;
+    const blocks = generateDefaultConditions(preset.templateIds);
+    setConditions(blocks);
+    setShowConditionPicker(false);
+    toast.success(`Preset "${preset.name}" aplicado`, { duration: 1500 });
+  }, []);
+
+  const moveCondition = useCallback((idx: number, direction: 'up' | 'down') => {
+    setConditions(prev => {
+      const newArr = [...prev];
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= newArr.length) return prev;
+      [newArr[idx], newArr[targetIdx]] = [newArr[targetIdx], newArr[idx]];
+      return newArr;
+    });
+  }, []);
+
   const selectClient = useCallback((client: Client) => {
     setSelectedClient(client);
     setClientSearch(client.name);
@@ -280,13 +336,14 @@ export default function QuotationBuilder({
         clientName: selectedClient?.name || clientSearch,
         clientRuc: selectedClient?.ruc || '',
         items: items.map(item => ({
-          description: item.name + (item.diameter ? ` ${item.diameter}` : ''),
+          description: item.name,
           quantity: item.quantity,
           unit: item.unit,
           unitPrice: item.price,
           subtotal: item.subtotal,
         })),
         subtotal, igv, total, currency, validityDays, paymentTerms, notes, status,
+        conditions: conditions.map(c => ({ id: c.id, title: c.title, content: c.content })),
       };
       const url = mode === 'edit' && quotationId ? `/api/cotizaciones/${quotationId}` : '/api/cotizaciones';
       const res = await fetch(url, {
@@ -319,6 +376,35 @@ export default function QuotationBuilder({
   // RENDER
   // ============================================================================
 
+  // Build preview data from current state
+  const previewData = useMemo((): QuotationDocumentData => ({
+    code,
+    date: new Date().toISOString(),
+    clientName: selectedClient?.name || clientSearch || '',
+    clientRuc: selectedClient?.ruc || '',
+    items: items.map(item => ({
+      description: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      unitPrice: item.price,
+      subtotal: item.subtotal,
+    })),
+    subtotal,
+    igv,
+    total,
+    includeIgv,
+    currency,
+    validityDays,
+    paymentTerms,
+    notes: notes || undefined,
+    conditions: conditions.map(c => ({ title: c.title, content: c.content })),
+  }), [code, selectedClient, clientSearch, items, subtotal, igv, total, includeIgv, currency, validityDays, paymentTerms, notes, conditions]);
+
+  // Determinar qué panel mostrar en el lado derecho
+  // Mobile: controlado por mobileTab. Desktop: controlado por showConditions
+  const showItemsPanel = mobileTab === 'items' || (mobileTab === 'catalog' && !showConditions);
+  const showConditionsPanel = mobileTab === 'conditions' || (mobileTab === 'catalog' && showConditions);
+
   return (
     <div className="-m-6 flex flex-col h-[calc(100vh-0px)]">
       {/* ── HEADER ── */}
@@ -347,11 +433,22 @@ export default function QuotationBuilder({
               Guardar
             </button>
             <button
+              onClick={() => setShowPreview(true)}
+              disabled={items.length === 0}
+              className="p-1.5 text-gray-500 hover:text-[#DC2626] hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
+              title="Vista previa"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+            <button
               onClick={() => handleSave('sent')}
               disabled={saving || items.length === 0}
               className="px-3 py-1.5 text-xs font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] rounded-lg transition-colors disabled:opacity-50"
             >
-              PDF
+              Enviar
             </button>
           </div>
         </div>
@@ -427,6 +524,18 @@ export default function QuotationBuilder({
             Items {items.length > 0 && (
               <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] font-bold">
                 {items.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setMobileTab('conditions')}
+            className={`flex-1 py-2.5 text-xs font-semibold text-center transition-colors relative ${
+              mobileTab === 'conditions' ? 'text-[#DC2626] border-b-2 border-[#DC2626]' : 'text-gray-500'
+            }`}
+          >
+            Condiciones {conditions.length > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-500 text-white text-[10px] font-bold">
+                {conditions.length}
               </span>
             )}
           </button>
@@ -512,167 +621,339 @@ export default function QuotationBuilder({
           </div>
         </div>
 
-        {/* ── RIGHT: ITEMS AGREGADOS ── */}
-        <div className={`${mobileTab === 'items' ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-[420px] lg:min-w-[360px] border-l border-gray-200 bg-white overflow-hidden`}>
-          {/* Items header */}
-          <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">
-                Cotización
-                {items.length > 0 && <span className="ml-1 text-gray-400">({items.length})</span>}
-              </h3>
-              {items.length > 0 && (
-                <button
-                  onClick={() => setShowConditions(v => !v)}
-                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  {showConditions ? 'Ocultar' : 'Condiciones'}
-                </button>
-              )}
-            </div>
+        {/* ── RIGHT PANEL: ITEMS + CONDICIONES ── */}
+        <div className={`${mobileTab === 'items' || mobileTab === 'conditions' ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-[420px] lg:min-w-[360px] border-l border-gray-200 bg-white overflow-hidden`}>
+
+          {/* Desktop panel tabs */}
+          <div className="hidden lg:flex border-b border-gray-200 flex-shrink-0">
+            <button
+              onClick={() => setShowConditions(false)}
+              className={`flex-1 py-2.5 text-xs font-semibold text-center transition-colors ${
+                !showConditions ? 'text-[#DC2626] border-b-2 border-[#DC2626]' : 'text-gray-500'
+              }`}
+            >
+              Items {items.length > 0 && <span className="text-gray-400">({items.length})</span>}
+            </button>
+            <button
+              onClick={() => setShowConditions(true)}
+              className={`flex-1 py-2.5 text-xs font-semibold text-center transition-colors ${
+                showConditions ? 'text-[#DC2626] border-b-2 border-[#DC2626]' : 'text-gray-500'
+              }`}
+            >
+              Condiciones {conditions.length > 0 && <span className="text-gray-400">({conditions.length})</span>}
+            </button>
           </div>
 
-          {/* Conditions (collapsible) */}
-          {showConditions && (
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-              <div className="flex gap-2 mb-2">
-                <div className="flex-1">
-                  <label className="text-[10px] text-gray-500 uppercase font-medium">Validez</label>
-                  <select
-                    value={validityDays}
-                    onChange={(e) => setValidityDays(parseInt(e.target.value))}
-                    className="w-full mt-0.5 border border-gray-200 rounded px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
-                  >
-                    <option value={7}>7 días</option>
-                    <option value={15}>15 días</option>
-                    <option value={30}>30 días</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="text-[10px] text-gray-500 uppercase font-medium">Pago</label>
-                  <select
-                    value={paymentTerms}
-                    onChange={(e) => setPaymentTerms(e.target.value)}
-                    className="w-full mt-0.5 border border-gray-200 rounded px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
-                  >
-                    <option>Contado</option>
-                    <option>50% adelanto</option>
-                    <option>Crédito 30 días</option>
-                  </select>
+          {/* ── ITEMS VIEW ── */}
+          {showItemsPanel && (
+            <>
+              {/* Items subheader */}
+              <div className="px-4 py-2 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-gray-700">
+                    Items
+                  </h3>
+                  <div className="flex gap-1">
+                    <select
+                      value={validityDays}
+                      onChange={(e) => setValidityDays(parseInt(e.target.value))}
+                      className="border border-gray-200 rounded px-1.5 py-1 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
+                    >
+                      <option value={7}>7d</option>
+                      <option value={15}>15d</option>
+                      <option value={30}>30d</option>
+                    </select>
+                    <select
+                      value={paymentTerms}
+                      onChange={(e) => setPaymentTerms(e.target.value)}
+                      className="border border-gray-200 rounded px-1.5 py-1 text-[10px] bg-white focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
+                    >
+                      <option>Contado</option>
+                      <option>50% adelanto</option>
+                      <option>Crédito 30 días</option>
+                      <option>Valorizaciones</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Notas..."
-                rows={2}
-                className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs bg-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30 resize-none"
-              />
-            </div>
-          )}
 
-          {/* Items list */}
-          <div className="flex-1 overflow-y-auto">
-            {items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="text-sm text-gray-500 font-medium">Sin items</p>
-                <p className="text-xs text-gray-400 mt-1">Selecciona del catálogo</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-50">
-                {items.map(item => {
-                  const cat = CATEGORIES.find(c => c.id === item.category);
-                  return (
-                    <div key={item.id} className="px-4 py-2.5 hover:bg-gray-50/50 transition-colors">
-                      <div className="flex items-start gap-2">
-                        {/* Dot color + Name */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat?.color }} />
-                            <p className="text-sm text-gray-900 truncate">{item.name}</p>
+              {/* Items list */}
+              <div className="flex-1 overflow-y-auto">
+                {items.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                      <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-500 font-medium">Sin items</p>
+                    <p className="text-xs text-gray-400 mt-1">Selecciona del catálogo</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {items.map(item => {
+                      const cat = CATEGORIES.find(c => c.id === item.category);
+                      return (
+                        <div key={item.id} className="px-4 py-2.5 hover:bg-gray-50/50 transition-colors">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 min-w-0 pt-0.5">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cat?.color }} />
+                                <p className="text-sm text-gray-900 truncate">{item.name}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => removeItem(item.id)}
+                              className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5 pl-3.5">
+                            <div className="flex items-center bg-gray-100 rounded-md">
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                className="px-2 py-1 text-gray-500 hover:text-gray-700 transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+                                </svg>
+                              </button>
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value) || 0)}
+                                className="w-10 bg-transparent text-center text-xs font-mono font-bold text-gray-900 focus:outline-none"
+                              />
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="px-2 py-1 text-gray-500 hover:text-gray-700 transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                                </svg>
+                              </button>
+                            </div>
+                            <span className="text-[10px] text-gray-400">{item.unit}</span>
+                            <span className="text-[10px] text-gray-300 mx-0.5">&times;</span>
+                            <input
+                              type="number"
+                              value={item.price}
+                              onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
+                              className="w-16 bg-gray-100 rounded-md px-2 py-1 text-right text-xs font-mono text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
+                            />
+                            <span className="text-[10px] text-gray-300">=</span>
+                            <span className="font-mono text-xs font-bold text-gray-900 ml-auto">
+                              {formatPrice(item.subtotal)}
+                            </span>
                           </div>
                         </div>
-                        {/* Remove */}
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="p-1 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                      {/* Qty, price, subtotal */}
-                      <div className="flex items-center gap-2 mt-1.5 pl-3.5">
-                        <div className="flex items-center bg-gray-100 rounded-md">
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="px-2 py-1 text-gray-500 hover:text-gray-700 transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
-                            </svg>
-                          </button>
-                          <input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => updateQuantity(item.id, parseFloat(e.target.value) || 0)}
-                            className="w-10 bg-transparent text-center text-xs font-mono font-bold text-gray-900 focus:outline-none"
-                          />
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="px-2 py-1 text-gray-500 hover:text-gray-700 transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </button>
-                        </div>
-                        <span className="text-[10px] text-gray-400">{item.unit}</span>
-                        <span className="text-[10px] text-gray-300 mx-0.5">&times;</span>
-                        <input
-                          type="number"
-                          value={item.price}
-                          onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
-                          className="w-16 bg-gray-100 rounded-md px-2 py-1 text-right text-xs font-mono text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
-                        />
-                        <span className="text-[10px] text-gray-300">=</span>
-                        <span className="font-mono text-xs font-bold text-gray-900 ml-auto">
-                          {formatPrice(item.subtotal)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Totals */}
-          {items.length > 0 && (
-            <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex-shrink-0">
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Subtotal</span>
-                  <span className="font-mono">{formatPrice(subtotal)}</span>
-                </div>
-                {includeIgv && (
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>IGV (18%)</span>
-                    <span className="font-mono">{formatPrice(igv)}</span>
+                      );
+                    })}
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold text-gray-900 pt-1 border-t border-gray-200">
-                  <span>Total</span>
-                  <span className="font-mono text-[#DC2626]">{formatPrice(total)}</span>
+              </div>
+
+              {/* Totals */}
+              {items.length > 0 && (
+                <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex-shrink-0">
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Subtotal</span>
+                      <span className="font-mono">{formatPrice(subtotal)}</span>
+                    </div>
+                    {includeIgv && (
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>IGV (18%)</span>
+                        <span className="font-mono">{formatPrice(igv)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-base font-bold text-gray-900 pt-1 border-t border-gray-200">
+                      <span>Total</span>
+                      <span className="font-mono text-[#DC2626]">{formatPrice(total)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── CONDITIONS VIEW ── */}
+          {showConditionsPanel && (
+            <>
+              {/* Conditions header */}
+              <div className="px-4 py-2 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-gray-700">Condiciones del servicio</h3>
+                  <button
+                    onClick={() => setShowConditionPicker(v => !v)}
+                    className="text-[10px] font-medium text-[#DC2626] hover:text-[#B91C1C] transition-colors"
+                  >
+                    {showConditionPicker ? 'Cerrar' : '+ Agregar'}
+                  </button>
                 </div>
               </div>
-            </div>
+
+              {/* Condition picker (templates browser) */}
+              {showConditionPicker && (
+                <div className="border-b border-gray-200 bg-gray-50 flex-shrink-0 max-h-[50vh] overflow-y-auto">
+                  {/* Presets */}
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-[10px] text-gray-500 uppercase font-medium mb-1.5">Presets rápidos</p>
+                    <div className="flex gap-2">
+                      {CONDITION_PRESETS.map(preset => (
+                        <button
+                          key={preset.id}
+                          onClick={() => applyPreset(preset.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:border-[#DC2626]/30 hover:bg-red-50 transition-all"
+                        >
+                          {preset.name}
+                          <span className="block text-[10px] text-gray-400 font-normal">{preset.description}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Template categories */}
+                  {CONDITION_TEMPLATES.map((template: ConditionTemplate) => (
+                    <div key={template.id} className="px-4 py-2 border-b border-gray-100 last:border-b-0">
+                      <p className="text-[10px] text-gray-500 uppercase font-medium mb-1.5">
+                        {template.icon} {template.name}
+                        <span className="normal-case font-normal ml-1">- {template.description}</span>
+                      </p>
+                      <div className="space-y-1">
+                        {template.blocks.map(block => {
+                          const isAdded = conditions.some(c => c.id === block.id);
+                          return (
+                            <button
+                              key={block.id}
+                              onClick={() => addConditionBlock(block)}
+                              disabled={isAdded}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
+                                isAdded
+                                  ? 'bg-green-50 text-green-700 border border-green-200 cursor-default'
+                                  : 'bg-white border border-gray-200 hover:border-[#DC2626]/30 hover:bg-red-50 text-gray-700'
+                              }`}
+                            >
+                              <span className="font-medium">{block.title}</span>
+                              {isAdded && <span className="ml-2 text-[10px]">Agregado</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Conditions editor (added blocks) */}
+              <div className="flex-1 overflow-y-auto">
+                {conditions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                      <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-500 font-medium">Sin condiciones</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Usa un preset o agrega condiciones individuales
+                    </p>
+                    <button
+                      onClick={() => setShowConditionPicker(true)}
+                      className="mt-3 px-4 py-2 text-xs font-medium text-[#DC2626] bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                    >
+                      Explorar condiciones
+                    </button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {conditions.map((condition, idx) => (
+                      <div key={`${condition.id}-${idx}`} className="px-4 py-3">
+                        {/* Condition header */}
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span className="text-[10px] text-gray-400 font-mono flex-shrink-0">{idx + 1}.</span>
+                            {editingConditionIdx === idx ? (
+                              <input
+                                type="text"
+                                value={condition.title}
+                                onChange={(e) => updateConditionTitle(idx, e.target.value)}
+                                onBlur={() => setEditingConditionIdx(null)}
+                                autoFocus
+                                className="flex-1 text-xs font-semibold text-gray-900 bg-gray-100 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30"
+                              />
+                            ) : (
+                              <button
+                                onClick={() => setEditingConditionIdx(idx)}
+                                className="text-xs font-semibold text-gray-900 text-left truncate hover:text-[#DC2626] transition-colors"
+                                title="Clic para editar título"
+                              >
+                                {condition.title}
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-0.5 flex-shrink-0">
+                            <button
+                              onClick={() => moveCondition(idx, 'up')}
+                              disabled={idx === 0}
+                              className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-30 transition-colors"
+                              title="Subir"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => moveCondition(idx, 'down')}
+                              disabled={idx === conditions.length - 1}
+                              className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-30 transition-colors"
+                              title="Bajar"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => removeCondition(idx)}
+                              className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                              title="Eliminar"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        {/* Condition content (editable textarea) */}
+                        <textarea
+                          value={condition.content}
+                          onChange={(e) => updateConditionContent(idx, e.target.value)}
+                          rows={Math.min(Math.max(condition.content.split('\n').length, 3), 12)}
+                          className="w-full text-[11px] leading-relaxed text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/20 focus:border-[#DC2626]/30 resize-y transition-all"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Notas libres */}
+              {conditions.length > 0 && (
+                <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex-shrink-0">
+                  <label className="text-[10px] text-gray-500 uppercase font-medium">Notas adicionales</label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Notas libres que se agregan al final del documento..."
+                    rows={2}
+                    className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-[#DC2626]/30 resize-none"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -692,6 +973,47 @@ export default function QuotationBuilder({
             </div>
             <span className="font-mono text-lg font-bold text-[#DC2626]">{formatPrice(total)}</span>
           </button>
+        </div>
+      )}
+
+      {/* ── PREVIEW MODAL ── */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col">
+          {/* Preview toolbar */}
+          <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-sm font-bold text-gray-900">Vista previa — {code}</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Imprimir
+              </button>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+          {/* Document preview */}
+          <div className="flex-1 overflow-y-auto py-8 print:p-0 print:overflow-visible">
+            <QuotationDocument data={previewData} className="shadow-lg mx-auto print:shadow-none" />
+          </div>
         </div>
       )}
     </div>

@@ -79,6 +79,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         validity_date: validityDate.toISOString().split('T')[0],
         payment_terms: original.payment_terms,
         notes: original.notes,
+        conditions: original.conditions || [],
         created_by: user.id,
       })
       .select('id')

@@ -87,6 +87,11 @@ export default async function EditCotizacionPage({ params }: PageProps) {
     validityDays: quotation.validity_days || 15,
     paymentTerms: quotation.payment_terms || 'Contado',
     notes: quotation.notes || '',
+    conditions: quotation.conditions || [],
+    // Totales (para el viewer)
+    subtotal: Number(quotation.subtotal) || 0,
+    igv: Number(quotation.igv) || 0,
+    total: Number(quotation.total) || 0,
   };
 
   // Check if quotation is editable
@@ -107,9 +112,10 @@ export default async function EditCotizacionPage({ params }: PageProps) {
   );
 }
 
-// Simple viewer for non-editable quotations
+// Viewer para cotizaciones no editables (enviadas, aprobadas, rechazadas)
 function QuotationViewer({ quotation, initialData }: { quotation: any; initialData: any }) {
   const currencySymbol = initialData.currency === 'PEN' ? 'S/' : '$';
+  const fmt = (n: number) => `${currencySymbol} ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const statusConfig = {
     draft: { label: 'Borrador', color: 'bg-gray-100 text-gray-700' },
@@ -119,108 +125,161 @@ function QuotationViewer({ quotation, initialData }: { quotation: any; initialDa
   };
 
   const status = statusConfig[quotation.status as keyof typeof statusConfig] || statusConfig.draft;
+  const conditions: { id?: string; title: string; content: string }[] = initialData.conditions || [];
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <div className="flex items-start justify-between">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-4">
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">{quotation.code}</h1>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${status.color}`}>
+              <a href="/panel/cotizaciones" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </a>
+              <h1 className="text-xl font-bold text-gray-900 font-mono">{quotation.code}</h1>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>
                 {status.label}
               </span>
             </div>
-            <p className="text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 mt-1 ml-10">
               Creada el {new Date(quotation.created_at).toLocaleDateString('es-PE', {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric',
               })}
+              {quotation.sent_at && (
+                <span> · Enviada el {new Date(quotation.sent_at).toLocaleDateString('es-PE', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}</span>
+              )}
             </p>
           </div>
           <div className="flex gap-2">
             <a
-              href={`/panel/cotizaciones/${quotation.id}/pdf`}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+              href={`/panel/cotizaciones/${quotation.id}/preview`}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              Descargar PDF
+              Vista previa
             </a>
           </div>
         </div>
       </div>
 
-      {/* Client Info */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Cliente</h2>
-        <div className="space-y-1">
-          <p className="text-lg font-semibold text-gray-900">{initialData.clientName || '—'}</p>
-          {initialData.clientRuc && <p className="text-gray-600">RUC: {initialData.clientRuc}</p>}
-          {initialData.clientEmail && <p className="text-gray-600">{initialData.clientEmail}</p>}
-          {initialData.clientPhone && <p className="text-gray-600">{initialData.clientPhone}</p>}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        {/* Client Info */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Cliente</h2>
+          <p className="text-sm font-semibold text-gray-900">{initialData.clientName || '—'}</p>
+          {initialData.clientRuc && <p className="text-xs text-gray-500 font-mono mt-1">RUC: {initialData.clientRuc}</p>}
         </div>
-      </div>
 
-      {/* Items */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Items</h2>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-2 text-sm font-medium text-gray-600">Descripción</th>
-              <th className="text-center py-2 text-sm font-medium text-gray-600 w-20">Cant.</th>
-              <th className="text-center py-2 text-sm font-medium text-gray-600 w-16">Und.</th>
-              <th className="text-right py-2 text-sm font-medium text-gray-600 w-24">P. Unit.</th>
-              <th className="text-right py-2 text-sm font-medium text-gray-600 w-28">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {initialData.items.map((item: any) => (
-              <tr key={item.id} className="border-b border-gray-100">
-                <td className="py-3 text-gray-900">{item.description}</td>
-                <td className="py-3 text-gray-600 text-center">{item.quantity}</td>
-                <td className="py-3 text-gray-600 text-center">{item.unit}</td>
-                <td className="py-3 text-gray-600 text-right">{currencySymbol} {item.unitPrice.toFixed(2)}</td>
-                <td className="py-3 text-gray-900 font-medium text-right">{currencySymbol} {item.subtotal.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Config */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Configuración</h2>
+          <div className="space-y-1 text-sm text-gray-600">
+            <p>Moneda: <span className="font-medium text-gray-900">{initialData.currency}</span></p>
+            <p>Validez: <span className="font-medium text-gray-900">{initialData.validityDays} días</span></p>
+            <p>Pago: <span className="font-medium text-gray-900">{initialData.paymentTerms}</span></p>
+          </div>
+        </div>
 
-        {/* Totals */}
-        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
-          <div className="w-64 space-y-2">
-            <div className="flex justify-between text-gray-600">
-              <span>Subtotal:</span>
-              <span>{currencySymbol} {initialData.subtotal.toFixed(2)}</span>
-            </div>
-            {initialData.includeIgv && (
-              <div className="flex justify-between text-gray-600">
-                <span>IGV (18%):</span>
-                <span>{currencySymbol} {initialData.igv.toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
-              <span>Total:</span>
-              <span className="text-[#DC2626]">{currencySymbol} {initialData.total.toFixed(2)}</span>
-            </div>
+        {/* Total */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Total</h2>
+          <p className="text-2xl font-bold text-[#DC2626] font-mono">{fmt(initialData.total)}</p>
+          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+            <p>Subtotal: {fmt(initialData.subtotal)}</p>
+            {initialData.includeIgv && <p>IGV (18%): {fmt(initialData.igv)}</p>}
           </div>
         </div>
       </div>
 
-      {/* Conditions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Condiciones</h2>
-        <ul className="space-y-2 text-gray-600">
-          <li>• Validez: {initialData.validityDays} días</li>
-          <li>• Forma de pago: {initialData.paymentTerms}</li>
-          {initialData.notes && <li>• {initialData.notes}</li>}
-        </ul>
+      {/* Items */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100">
+          <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+            Items ({initialData.items.length})
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="text-left px-5 py-2.5 text-xs font-semibold text-gray-600">#</th>
+                <th className="text-left px-5 py-2.5 text-xs font-semibold text-gray-600">Descripción</th>
+                <th className="text-center px-3 py-2.5 text-xs font-semibold text-gray-600 w-16">Cant.</th>
+                <th className="text-center px-3 py-2.5 text-xs font-semibold text-gray-600 w-14">Und.</th>
+                <th className="text-right px-5 py-2.5 text-xs font-semibold text-gray-600 w-24">P. Unit.</th>
+                <th className="text-right px-5 py-2.5 text-xs font-semibold text-gray-600 w-28">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {initialData.items.map((item: any, idx: number) => (
+                <tr key={item.id} className="hover:bg-gray-50/50">
+                  <td className="px-5 py-3 text-xs text-gray-400 font-mono">{idx + 1}</td>
+                  <td className="px-5 py-3 text-sm text-gray-900">{item.description}</td>
+                  <td className="px-3 py-3 text-sm text-gray-600 text-center font-mono">{item.quantity}</td>
+                  <td className="px-3 py-3 text-xs text-gray-500 text-center">{item.unit}</td>
+                  <td className="px-5 py-3 text-sm text-gray-600 text-right font-mono">{fmt(item.unitPrice)}</td>
+                  <td className="px-5 py-3 text-sm text-gray-900 font-semibold text-right font-mono">{fmt(item.subtotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-gray-200 bg-gray-50">
+                <td colSpan={5} className="px-5 py-3 text-sm text-gray-600 text-right">Subtotal</td>
+                <td className="px-5 py-3 text-sm text-gray-900 font-mono text-right">{fmt(initialData.subtotal)}</td>
+              </tr>
+              {initialData.includeIgv && (
+                <tr className="bg-gray-50">
+                  <td colSpan={5} className="px-5 py-2 text-sm text-gray-600 text-right">IGV (18%)</td>
+                  <td className="px-5 py-2 text-sm text-gray-900 font-mono text-right">{fmt(initialData.igv)}</td>
+                </tr>
+              )}
+              <tr className="bg-gray-50 border-t border-gray-200">
+                <td colSpan={5} className="px-5 py-3 text-base font-bold text-gray-900 text-right">Total</td>
+                <td className="px-5 py-3 text-base font-bold text-[#DC2626] font-mono text-right">{fmt(initialData.total)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
+
+      {/* Conditions */}
+      {conditions.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4">
+          <div className="px-5 py-3 border-b border-gray-100">
+            <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+              Condiciones del servicio ({conditions.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {conditions.map((condition, idx) => (
+              <div key={condition.id || idx} className="px-5 py-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{condition.title}</h3>
+                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{condition.content}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      {initialData.notes && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Notas</h2>
+          <p className="text-sm text-gray-600 whitespace-pre-line">{initialData.notes}</p>
+        </div>
+      )}
     </div>
   );
 }

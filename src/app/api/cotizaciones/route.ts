@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       paymentTerms,
       notes,
       status = 'draft',
+      conditions,
     } = body;
 
     // First, create or find client
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
             contact_name: clientName,
             ruc: clientRuc || null,
             contact_email: clientEmail || null,
-            contact_phone: clientPhone || null,
+            contact_phone: clientPhone || '-',
             address: clientAddress || null,
           })
           .select('id')
@@ -101,6 +102,7 @@ export async function POST(request: NextRequest) {
         validity_date: validityDate.toISOString().split('T')[0],
         payment_terms: paymentTerms || 'Contado',
         notes: [deliveryTime, notes].filter(Boolean).join('\n'),
+        conditions: conditions || [],
         created_by: user.id,
       })
       .select('id')
