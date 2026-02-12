@@ -72,7 +72,7 @@ export default async function ClienteDetailPage({ params }: PageProps) {
         </div>
         <div className="flex gap-3">
           <Link
-            href={`/cotizador/nueva`}
+            href={`/panel/cotizaciones/nueva`}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#DC2626] text-white rounded-lg hover:bg-[#B91C1C] font-medium"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ export default async function ClienteDetailPage({ params }: PageProps) {
             Nueva Cotización
           </Link>
           <Link
-            href={`/clientes/${id}/editar`}
+            href={`/panel/clientes/${id}/editar`}
             className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@ export default async function ClienteDetailPage({ params }: PageProps) {
                     <tr key={quotation.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <Link
-                          href={`/cotizador/${quotation.id}`}
+                          href={`/panel/cotizaciones/${quotation.id}`}
                           className="text-[#1E3A8A] hover:underline font-medium"
                         >
                           {quotation.code}
