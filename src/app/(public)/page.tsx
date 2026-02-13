@@ -9,7 +9,7 @@ const services = [
   {
     title: "Perforación Diamantina",
     description: "Perforaciones de alta precisión en muros, losas y vigas de concreto armado, con equipos HILTI de última generación.",
-    image: "/images/perforacion-diamantina.jpg",
+    image: "/images/perforacion-diamantina.webp",
     icon: "/icons/perforacion.svg",
     href: "/servicios/perforaciones-diamantinas",
     size: "large",
@@ -17,7 +17,7 @@ const services = [
   {
     title: "Anclajes Químicos",
     description: "Fijación segura de fierros de construcción y varillas roscadas con adhesivos químicos estructurales HILTI.",
-    image: "/images/anclajes-quimicos.png",
+    image: "/images/anclajes-quimicos.webp",
     icon: "/icons/anclajes.svg",
     href: "/servicios/anclajes-quimicos",
     size: "large",
@@ -25,7 +25,7 @@ const services = [
   {
     title: "Detección de Metales",
     description: "Escaneo de estructuras con detectores HILTI. Reportes técnicos e imágenes 3D.",
-    image: "/images/deteccion-metales.webp",
+    image: "/images/deteccion-metales-new.webp",
     icon: "/icons/deteccion.svg",
     href: "/servicios/deteccion-metales",
     size: "small",

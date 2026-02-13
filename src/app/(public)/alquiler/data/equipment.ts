@@ -420,6 +420,20 @@ export const categories: Category[] = [
         ],
         image: '/images/alquiler/fijadoras/dx-76.jpg',
       },
+      {
+        id: 'dx-460',
+        model: 'DX 460',
+        description: 'Fijadora a pólvora semiautomática para concreto y acero.',
+        specs: [
+          { label: 'Tipo', value: 'Cartucho calibre 6.8/11 M (.27)' },
+          { label: 'Energía máx.', value: '325 J' },
+          { label: 'Regulación', value: '4 niveles de potencia' },
+          { label: 'Pernos', value: '12 – 72 mm' },
+          { label: 'Peso', value: '3.5 kg' },
+          { label: 'Material base', value: 'Concreto y acero' },
+        ],
+        image: '/images/alquiler/fijadoras/dx-460.jpg',
+      },
     ],
   },
   {
