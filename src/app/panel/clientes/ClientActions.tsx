@@ -48,7 +48,7 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
       <div className="flex items-center justify-end gap-1">
         {/* Ver */}
         <Link
-          href={`/clientes/${clientId}`}
+          href={`/panel/clientes/${clientId}`}
           className="p-2 text-gray-500 hover:text-[#1E3A8A] hover:bg-gray-100 rounded-lg transition-colors"
           title="Ver cliente"
         >
@@ -60,7 +60,7 @@ export default function ClientActions({ clientId, clientName }: ClientActionsPro
 
         {/* Editar */}
         <Link
-          href={`/clientes/${clientId}/editar`}
+          href={`/panel/clientes/${clientId}/editar`}
           className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
           title="Editar cliente"
         >

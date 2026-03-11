@@ -104,7 +104,7 @@ export default function EditarClientePage({ params }: PageProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link href={`/clientes/${clientId}`} className="text-[#1E3A8A] hover:underline text-sm flex items-center gap-1">
+        <Link href={`/panel/clientes/${clientId}`} className="text-[#1E3A8A] hover:underline text-sm flex items-center gap-1">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -191,7 +191,7 @@ export default function EditarClientePage({ params }: PageProps) {
 
         <div className="flex gap-3 pt-4 border-t">
           <Link
-            href={`/clientes/${clientId}`}
+            href={`/panel/clientes/${clientId}`}
             className="flex-1 text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
           >
             Cancelar

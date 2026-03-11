@@ -62,3 +62,12 @@ supabase/.temp/
 # archivos de migración (generados para entrega, no commitear)
 supabase/export/
 supabase/*.zip
+
+# documentos de entrega al cliente
+/docs/*.pdf
+/docs/logo.png
+/docs/manual-crm/
+
+# Documentación de planificación
+PLAN_COTIZADOR.md
+CATALOGO_SERVICIOS.csv

@@ -180,7 +180,7 @@ const navigationGroups: NavGroup[] = [
     icon: icons.sales,
     permission: 'quotations:view',
     items: [
-      { name: 'Cotizaciones', href: '/panel/cotizador', icon: icons.quotations, permission: 'quotations:view' },
+      { name: 'Cotizaciones', href: '/panel/cotizaciones', icon: icons.quotations, permission: 'quotations:view' },
     ],
   },
   {
