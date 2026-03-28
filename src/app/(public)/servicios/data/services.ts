@@ -11,6 +11,7 @@ export interface ServiceData {
   metaDescription: string;
   heroSubtitle: string;
   image: string;
+  heroImage?: string;
   icon: string;
   shortDescription: string;
   intro: string[];
@@ -37,6 +38,7 @@ export const services: ServiceData[] = [
     metaDescription: 'Perforación diamantina en Lima: alta precisión en muros, losas y vigas con equipos HILTI. Más de 20 años de experiencia en Perú.',
     heroSubtitle: 'Alta precisión en muros, losas y vigas de concreto',
     image: '/images/perforacion-diamantina.jpg',
+    heroImage: '/images/perforacion-diamantina-hero.jpg',
     icon: '/icons/perforacion.svg',
     shortDescription: 'Perforaciones de todos los diámetros y profundidades en estructuras de concreto armado, con equipos HILTI de última generación.',
     intro: [
@@ -173,6 +175,7 @@ export const services: ServiceData[] = [
     metaDescription: 'Escaneo de estructuras con detectores HILTI PS 200 y PS 1000. Reportes técnicos e imágenes 3D. Más de 20 años de experiencia.',
     heroSubtitle: 'Escaneo de estructuras con reportes técnicos e imágenes 3D',
     image: '/images/deteccion-metales.webp',
+    heroImage: '/images/deteccion-metales-hero.jpg',
     icon: '/icons/deteccion.svg',
     shortDescription: 'Detección de metales y escaneo de superficies en estructuras de concreto, con capacidad de generar reportes técnicos e imágenes 3D.',
     intro: [
@@ -221,6 +224,7 @@ export const services: ServiceData[] = [
     metaDescription: 'Realizamos pruebas de anclaje (pull out test) para verificar resistencia de fijaciones. Equipos HILTI HAT 28 y HAT 30. Informes técnicos.',
     heroSubtitle: 'Verificación de resistencia real de anclajes y fijaciones',
     image: '/images/pruebas-anclaje.jpg',
+    heroImage: '/images/pruebas-anclaje-hero.jpg',
     icon: '/icons/pullout.svg',
     shortDescription: 'Pruebas de anclaje para medir la fuerza de sujeción y resistencia real de anclajes instalados, con informes técnicos detallados.',
     intro: [

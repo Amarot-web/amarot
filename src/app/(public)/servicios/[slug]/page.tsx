@@ -126,14 +126,23 @@ export default async function ServicePage({ params }: Props) {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-20 bg-gradient-to-br from-[#1E3A8A] to-[#0f1d45] overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+      <section className="relative py-20 md:py-28 lg:py-32 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          {service.heroImage ? (
+            <img
+              src={service.heroImage}
+              alt={service.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[#1E3A8A] to-[#0f1d45]" />
+          )}
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f1d45]/85 via-[#1E3A8A]/70 to-[#0f1d45]/50" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <AnimatedSection animation="fade-up">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -148,10 +157,10 @@ export default async function ServicePage({ params }: Props) {
                 Equipos HILTI
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl drop-shadow-lg">
               {service.title}
             </h1>
-            <p className="text-lg md:text-xl text-blue-100 max-w-2xl">
+            <p className="text-lg md:text-xl text-blue-100 max-w-2xl drop-shadow-md">
               {service.heroSubtitle}
             </p>
           </AnimatedSection>
