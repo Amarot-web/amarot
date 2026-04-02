@@ -2,11 +2,19 @@
 
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth/permissions';
+
+async function requireAuth() {
+  const user = await getAuthUser();
+  if (!user) throw new Error('No autorizado');
+  return user;
+}
 
 export async function updateMessageStatus(
   messageId: string,
   status: 'new' | 'read' | 'replied' | 'spam'
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAuth();
   const supabase = createAdminClient();
 
   const updateData: Record<string, unknown> = { status };
@@ -33,6 +41,7 @@ export async function updateMessageStatus(
 export async function deleteMessage(
   messageId: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAuth();
   const supabase = createAdminClient();
 
   const { error } = await supabase
@@ -55,6 +64,7 @@ export async function getMessageStats(): Promise<{
   replied: number;
   spam: number;
 }> {
+  await requireAuth();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -77,6 +87,10 @@ export async function getMessageStats(): Promise<{
 export async function updateNotificationEmails(
   emails: string[]
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await requireAuth();
+  if (user.role !== 'admin') {
+    return { success: false, error: 'Solo administradores pueden cambiar emails de notificación' };
+  }
   const supabase = createAdminClient();
 
   const { error } = await supabase
@@ -96,6 +110,7 @@ export async function updateNotificationEmails(
 }
 
 export async function getNotificationEmails(): Promise<string[]> {
+  await requireAuth();
   const supabase = createAdminClient();
 
   const { data } = await supabase

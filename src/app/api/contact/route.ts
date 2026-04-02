@@ -5,6 +5,16 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Escapar HTML para prevenir XSS en emails
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Rate limiting: máximo 3 envíos por hora por IP
 async function checkRateLimit(supabase: ReturnType<typeof createAdminClient>, ip: string): Promise<boolean> {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -86,7 +96,7 @@ async function sendNotificationEmail(
       from: 'AMAROT Web <onboarding@resend.dev>',
       to: emails,
       replyTo: data.email,
-      subject: `Nuevo contacto: ${data.name} (${data.company}) - ${serviceLabel}`,
+      subject: `Nuevo contacto: ${escapeHtml(data.name)} (${escapeHtml(data.company || '')}) - ${serviceLabel}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #1E3A8A; padding: 20px; text-align: center;">
@@ -97,42 +107,42 @@ async function sendNotificationEmail(
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold; width: 140px;">Nombre:</td>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${data.name}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(data.name)}</td>
               </tr>
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Empresa:</td>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${data.company}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(data.company || '')}</td>
               </tr>
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Email:</td>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-                  <a href="mailto:${data.email}">${data.email}</a>
+                  <a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Teléfono:</td>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-                  ${data.phone ? `<a href="tel:${data.phone}">${data.phone}</a>` : 'No proporcionado'}
+                  ${data.phone ? `<a href="tel:${escapeHtml(data.phone)}">${escapeHtml(data.phone)}</a>` : 'No proporcionado'}
                 </td>
               </tr>
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Servicio:</td>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
                   <span style="background-color: #DC2626; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px;">
-                    ${serviceLabel}
+                    ${escapeHtml(serviceLabel)}
                   </span>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Ubicación:</td>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${data.location}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(data.location)}</td>
               </tr>
             </table>
 
             <div style="margin-top: 20px;">
               <h3 style="color: #1E3A8A; margin-bottom: 10px;">Mensaje:</h3>
               <div style="background-color: white; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                ${data.message.replace(/\n/g, '<br>')}
+                ${escapeHtml(data.message).replace(/\n/g, '<br>')}
               </div>
             </div>
           </div>
@@ -163,7 +173,7 @@ export async function POST(request: NextRequest) {
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: validationResult.error.flatten() },
+        { error: 'Datos inválidos. Verifica los campos del formulario.' },
         { status: 400 }
       );
     }

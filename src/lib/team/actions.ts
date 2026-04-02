@@ -2,6 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth/permissions';
+
+async function requireAdmin() {
+  const user = await getAuthUser();
+  if (!user) throw new Error('No autorizado');
+  if (user.role !== 'admin') throw new Error('Se requiere rol de administrador');
+  return user;
+}
 
 // ========================================
 // CREATE TEAM MEMBER
@@ -18,6 +26,7 @@ interface CreateMemberData {
 export async function createTeamMember(
   data: CreateMemberData
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requireAdmin(); } catch { return { success: false, error: 'No autorizado' }; }
   const supabase = createAdminClient();
 
   try {
@@ -109,6 +118,7 @@ interface UpdateMemberData {
 export async function updateTeamMember(
   data: UpdateMemberData
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requireAdmin(); } catch { return { success: false, error: 'No autorizado' }; }
   const supabase = createAdminClient();
 
   try {
@@ -191,6 +201,7 @@ export async function updateTeamMember(
 export async function deleteTeamMember(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
+  try { await requireAdmin(); } catch { return { success: false, error: 'No autorizado' }; }
   const supabase = createAdminClient();
 
   try {
