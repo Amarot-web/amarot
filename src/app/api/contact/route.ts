@@ -150,7 +150,7 @@ async function sendNotificationEmail(
           <div style="padding: 20px; text-align: center; color: #6b7280; font-size: 12px;">
             <p>Este mensaje fue enviado desde el formulario de contacto de amarotperu.com</p>
             <p>
-              <a href="https://app.amarotperu.com/panel/mensajes" style="color: #DC2626;">
+              <a href="https://amarotperu.com/panel/mensajes" style="color: #DC2626;">
                 Ver todos los mensajes en el panel
               </a>
             </p>

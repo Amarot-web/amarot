@@ -104,17 +104,14 @@ export async function updateSession(request: NextRequest) {
 
   // ==================== LOGIN ====================
   if (pathname === '/login' && user) {
-    // Si ya está autenticado, redirigir al panel
-    // En producción, redirigir al subdominio app.*
-    const isDev = hostname.includes('localhost');
-    if (isDev) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/panel/dashboard';
-      return NextResponse.redirect(url);
-    } else {
-      // Redirigir al subdominio
-      return NextResponse.redirect('https://app.amarotperu.com/dashboard');
-    }
+    // Si ya está autenticado, ir al panel en el MISMO dominio.
+    // Antes se redirigía a https://app.amarotperu.com/dashboard, un subdominio
+    // que no existe en DNS (NXDOMAIN) y rompía el acceso con
+    // ERR_NAME_NOT_RESOLVED. El panel se sirve desde amarotperu.com/panel.
+    const url = request.nextUrl.clone();
+    url.pathname = '/panel/dashboard';
+    url.search = '';
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
