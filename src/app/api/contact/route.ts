@@ -92,8 +92,8 @@ async function sendNotificationEmail(
   const serviceLabel = serviceTypeLabels[data.serviceType] || data.serviceType;
 
   try {
-    const result = await resend.emails.send({
-      from: 'AMAROT Web <onboarding@resend.dev>',
+    const { data: sent, error: sendError } = await resend.emails.send({
+      from: 'AMAROT Web <noreply@amarotperu.com>',
       to: emails,
       replyTo: data.email,
       subject: `Nuevo contacto: ${escapeHtml(data.name)} (${escapeHtml(data.company || '')}) - ${serviceLabel}`,
@@ -158,9 +158,15 @@ async function sendNotificationEmail(
         </div>
       `,
     });
-    console.log('Email sent successfully:', result);
+    // Resend NO lanza excepción ante errores de API: devuelve { error }.
+    // Por eso antes los fallos pasaban desapercibidos (parecían "enviados").
+    if (sendError) {
+      console.error('Resend rechazó la notificación de contacto:', sendError);
+      return;
+    }
+    console.log('Notificación de contacto enviada, id:', sent?.id);
   } catch (error) {
-    console.error('Error sending notification email:', error);
+    console.error('Error inesperado enviando la notificación de contacto:', error);
   }
 }
 
