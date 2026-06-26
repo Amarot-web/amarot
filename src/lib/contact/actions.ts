@@ -1,8 +1,9 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/server';
 import { getAuthUser } from '@/lib/auth/permissions';
+import { WHATSAPP_TAG } from './whatsapp';
 
 async function requireAuth() {
   const user = await getAuthUser();
@@ -124,4 +125,28 @@ export async function getNotificationEmails(): Promise<string[]> {
   }
 
   return ['jaromerohassinger@gmail.com'];
+}
+
+export async function updateWhatsAppNumber(
+  phone: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireAuth();
+  if (user.role !== 'admin') {
+    return { success: false, error: 'Solo administradores pueden cambiar el número' };
+  }
+  const digits = (phone || '').replace(/\D/g, '');
+  if (!/^9\d{8}$/.test(digits)) {
+    return { success: false, error: 'Número inválido: deben ser 9 dígitos y empezar en 9' };
+  }
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from('system_settings')
+    .update({ value: digits, updated_at: new Date().toISOString() })
+    .eq('key', 'whatsapp_number');
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/panel/configuracion');
+  // Next.js 16: revalidateTag exige un segundo argumento (cacheLife profile).
+  revalidateTag(WHATSAPP_TAG, 'max');
+  return { success: true };
 }
