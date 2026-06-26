@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 
+// En desarrollo se permite conectar al Supabase local (Docker, 127.0.0.1/localhost) en la CSP.
+// En producción la CSP queda estricta (solo https://*.supabase.co).
+const isDev = process.env.NODE_ENV !== "production";
+const devConnectSrc = isDev
+  ? " http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*"
+  : "";
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -34,7 +41,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com https://www.google-analytics.com https://va.vercel-scripts.com",
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com https://www.google-analytics.com https://va.vercel-scripts.com${devConnectSrc}`,
               "frame-src https://challenges.cloudflare.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
