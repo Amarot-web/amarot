@@ -139,10 +139,14 @@ export async function updateWhatsAppNumber(
     return { success: false, error: 'Número inválido: deben ser 9 dígitos y empezar en 9' };
   }
   const supabase = createAdminClient();
+  // upsert: crea la fila si no existe (clave única en `key`) o la actualiza si ya existe.
+  // Así el panel funciona en prod sin tener que insertar la fila manualmente.
   const { error } = await supabase
     .from('system_settings')
-    .update({ value: digits, updated_at: new Date().toISOString() })
-    .eq('key', 'whatsapp_number');
+    .upsert(
+      { key: 'whatsapp_number', value: digits, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
   if (error) return { success: false, error: error.message };
 
   revalidatePath('/panel/configuracion');
