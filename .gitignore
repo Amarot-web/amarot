@@ -58,7 +58,15 @@ next-env.d.ts
 
 # supabase temp
 supabase/.temp/
+supabase/.branches/
 
 # archivos de migración (generados para entrega, no commitear)
 supabase/export/
 supabase/*.zip
+
+# entorno de desarrollo local (NO se versiona ni se sube a prod — ver dev-local)
+# Estos archivos viven solo en disco para correr Supabase local; main = producción.
+supabase/config.toml
+supabase/seed.sql
+supabase/baseline.local.sql
+scripts/db-env.sh
