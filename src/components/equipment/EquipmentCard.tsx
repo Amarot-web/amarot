@@ -5,14 +5,15 @@ import { Equipment } from '@/app/(public)/alquiler/data/equipment';
 interface EquipmentCardProps {
   equipment: Equipment;
   categoryColor: string;
+  phone: string;
 }
 
-export default function EquipmentCard({ equipment, categoryColor }: EquipmentCardProps) {
+export default function EquipmentCard({ equipment, categoryColor, phone }: EquipmentCardProps) {
   const handleCotizar = () => {
     const message = encodeURIComponent(
       `Hola, me interesa alquilar el equipo HILTI ${equipment.model}. ¿Podrían darme información sobre disponibilidad y tarifas?`
     );
-    window.open(`https://wa.me/51987640479?text=${message}`, '_blank');
+    window.open(`https://wa.me/51${phone}?text=${message}`, '_blank');
   };
 
   return (

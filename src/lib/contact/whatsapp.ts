@@ -20,6 +20,9 @@ export const getWhatsAppNumber = unstable_cache(
   { tags: [WHATSAPP_TAG] }
 );
 
+/** Formatos derivados del número, listos para pasar por prop a componentes cliente. */
+export type WhatsAppLinks = ReturnType<typeof whatsappLinks>;
+
 /** Deriva todos los formatos a partir de los 9 dígitos. */
 export function whatsappLinks(phone: string) {
   const digits = (phone || DEFAULT_WHATSAPP).replace(/\D/g, '').slice(-9);

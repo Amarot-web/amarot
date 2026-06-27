@@ -1,12 +1,14 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { getWhatsAppNumber, whatsappLinks } from "@/lib/contact/whatsapp";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const phone = await getWhatsAppNumber();
   const localBusinessJsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -18,7 +20,7 @@ export default function PublicLayout({
     image: "https://amarotperu.com/images/og-amarot-final.png",
     description:
       "Empresa peruana con más de 20 años de experiencia especializada en perforaciones diamantinas, anclajes químicos y alquiler de equipos HILTI.",
-    telephone: "+51 987 640 479",
+    telephone: whatsappLinks(phone).schema,
     email: ["j.amado@amarotperu.com", "g.amado@amarotperu.com"],
     address: {
       "@type": "PostalAddress",
@@ -112,7 +114,7 @@ export default function PublicLayout({
         {children}
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton phone={phone} />
     </>
   );
 }

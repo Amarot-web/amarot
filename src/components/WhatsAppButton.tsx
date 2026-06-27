@@ -1,12 +1,11 @@
 'use client';
 
-export default function WhatsAppButton() {
-  const phoneNumber = '51987640479';
+export default function WhatsAppButton({ phone }: { phone: string }) {
   const message = encodeURIComponent('Hola, me gustaría obtener más información sobre sus servicios.');
 
   return (
     <a
-      href={`https://wa.me/${phoneNumber}?text=${message}`}
+      href={`https://wa.me/51${phone}?text=${message}`}
       target="_blank"
       rel="noopener noreferrer"
       className="whatsapp-float"
