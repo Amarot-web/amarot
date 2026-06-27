@@ -5,6 +5,7 @@ import AnimatedSection from '@/components/AnimatedSection';
 import { TipTapRenderer } from '@/components/blog/tiptap-renderer';
 import { getPostBySlug, getAdjacentPosts } from '@/lib/blog/queries';
 import { getAuthUser } from '@/lib/auth/permissions';
+import { getWhatsAppNumber, whatsappLinks } from '@/lib/contact/whatsapp';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -80,6 +81,8 @@ export default async function BlogPostPage({ params, searchParams }: Props) {
   }
 
   const adjacentPosts = await getAdjacentPosts(post.publishAt);
+
+  const wa = whatsappLinks(await getWhatsAppNumber());
 
   // Format date
   const publishDate = post.publishAt
@@ -325,7 +328,7 @@ export default async function BlogPostPage({ params, searchParams }: Props) {
                     </p>
                     <div className="space-y-3">
                       <a
-                        href="https://wa.me/51987640479"
+                        href={wa.waLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors"

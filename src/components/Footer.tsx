@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getWhatsAppNumber, whatsappLinks } from '@/lib/contact/whatsapp';
 
 const footerLinks = [
   { name: 'Inicio', href: '/' },
@@ -17,8 +18,9 @@ const services = [
   { name: 'Alquiler de Equipos HILTI', href: '/alquiler' },
 ];
 
-export default function Footer() {
+export default async function Footer() {
   const currentYear = new Date().getFullYear();
+  const wa = whatsappLinks(await getWhatsAppNumber());
 
   return (
     <footer className="bg-[#0f172a] relative overflow-hidden">
@@ -117,7 +119,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">Teléfonos</p>
-                  <p className="text-gray-400 text-sm">987 640 479</p>
+                  <p className="text-gray-400 text-sm">{wa.display}</p>
                   <p className="text-gray-400 text-sm">983 150 353</p>
                 </div>
               </li>

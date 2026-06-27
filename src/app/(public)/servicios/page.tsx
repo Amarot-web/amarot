@@ -1,8 +1,7 @@
-'use client';
-
 import Link from "next/link";
 import AnimatedSection from "@/components/AnimatedSection";
 import { services } from "./data/services";
+import { getWhatsAppNumber, whatsappLinks } from "@/lib/contact/whatsapp";
 
 const diferenciadores = [
   {
@@ -45,10 +44,11 @@ const diferenciadores = [
   },
 ];
 
-export default function ServiciosPage() {
+export default async function ServiciosPage() {
   // Separar servicios core y complementarios
   const coreServices = services.filter(s => s.priority === 'core');
   const complementaryServices = services.filter(s => s.priority === 'complementary');
+  const wa = whatsappLinks(await getWhatsAppNumber());
 
   return (
     <>
@@ -280,13 +280,13 @@ export default function ServiciosPage() {
                 SOLICITAR COTIZACIÓN
               </Link>
               <a
-                href="tel:+51987640479"
+                href={wa.telLink}
                 className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-semibold px-8 py-4 rounded hover:bg-white/10 transition-colors"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                987 640 479
+                {wa.display}
               </a>
             </div>
           </AnimatedSection>

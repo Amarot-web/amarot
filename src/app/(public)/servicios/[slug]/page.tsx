@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import AnimatedSection from '@/components/AnimatedSection';
 import ServiceFAQ from '@/components/ServiceFAQ';
 import { services, getServiceBySlug, getAllServiceSlugs } from '../data/services';
+import { getWhatsAppNumber, whatsappLinks } from '@/lib/contact/whatsapp';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -74,6 +75,8 @@ export default async function ServicePage({ params }: Props) {
   // Get other services for sidebar
   const otherServices = services.filter(s => s.slug !== slug);
 
+  const wa = whatsappLinks(await getWhatsAppNumber());
+
   // Schema markup for SEO
   const schemaMarkup = {
     '@context': 'https://schema.org',
@@ -83,7 +86,7 @@ export default async function ServicePage({ params }: Props) {
     provider: {
       '@type': 'LocalBusiness',
       name: 'AMAROT PERÚ SAC',
-      telephone: '+51 987 640 479',
+      telephone: wa.schema,
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Lima',
@@ -300,16 +303,16 @@ export default async function ServicePage({ params }: Props) {
                     </p>
                     <div className="space-y-3">
                       <a
-                        href="tel:+51987640479"
+                        href={wa.telLink}
                         className="flex items-center justify-center gap-3 bg-white text-red-600 px-4 py-3 rounded-lg font-semibold hover:bg-red-50 transition-colors"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                         </svg>
-                        987 640 479
+                        {wa.display}
                       </a>
                       <a
-                        href="https://wa.me/51987640479"
+                        href={wa.waLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors"
@@ -375,7 +378,7 @@ export default async function ServicePage({ params }: Props) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="https://wa.me/51987640479"
+                href={wa.waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl"

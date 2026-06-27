@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedPosts, getPostsByTag, getTags } from "@/lib/blog/queries";
 import AnimatedSection from "@/components/AnimatedSection";
+import { getWhatsAppNumber, whatsappLinks } from "@/lib/contact/whatsapp";
 
 interface Props {
   searchParams: Promise<{ page?: string; tag?: string }>;
@@ -37,12 +38,14 @@ export default async function BlogPage({ searchParams }: Props) {
   const tagFilter = params.tag;
 
   // Ejecutar consultas en paralelo y usar función correcta según filtro
-  const [postsData, tags] = await Promise.all([
+  const [postsData, tags, whatsappNumber] = await Promise.all([
     tagFilter
       ? getPostsByTag(tagFilter, { page: currentPage, limit: 9 })
       : getPublishedPosts({ page: currentPage, limit: 9 }),
     getTags(),
+    getWhatsAppNumber(),
   ]);
+  const wa = whatsappLinks(whatsappNumber);
 
   const { posts, totalPages, total } = postsData;
 
@@ -293,7 +296,7 @@ export default async function BlogPage({ searchParams }: Props) {
                 Solicitar Cotización
               </Link>
               <a
-                href="https://wa.me/51987640479"
+                href={wa.waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors"
