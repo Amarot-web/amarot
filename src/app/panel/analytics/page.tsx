@@ -15,7 +15,7 @@ const isApiConfigured = () => {
 
 export default async function AnalyticsPage() {
   try {
-    await requirePermission('team:view'); // Solo admins
+    await requirePermission('analytics:view'); // Admins y gerentes (rol con analytics:view)
   } catch {
     redirect('/panel/dashboard');
   }
