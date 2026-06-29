@@ -6,7 +6,7 @@ import AlertSettingsClient from './AlertSettingsClient';
 
 export default async function AlertasConfigPage() {
   try {
-    await requirePermission('team:view');
+    await requirePermission('crm:edit');
   } catch {
     redirect('/panel/dashboard');
   }

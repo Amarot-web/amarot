@@ -93,6 +93,7 @@ export type PermissionName =
   | 'clients:view' | 'clients:create' | 'clients:edit' | 'clients:delete'
   | 'blog:view' | 'blog:create' | 'blog:edit' | 'blog:delete'
   | 'team:view' | 'team:create' | 'team:edit' | 'team:delete'
+  | 'crm:view' | 'crm:create' | 'crm:edit' | 'crm:delete' | 'crm:manage_rules' | 'crm:manage_templates'
   | 'analytics:view';
 
 // Permisos por módulo para UI

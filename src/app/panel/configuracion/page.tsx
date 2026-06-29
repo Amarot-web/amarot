@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requireRole } from '@/lib/auth/permissions';
 import { getNotificationEmails } from '@/lib/contact/actions';
 import { getWhatsAppNumber } from '@/lib/contact/whatsapp';
 import NotificationEmailsForm from './NotificationEmailsForm';
@@ -7,7 +7,7 @@ import WhatsAppNumberForm from './WhatsAppNumberForm';
 
 export default async function ConfiguracionPage() {
   try {
-    await requirePermission('team:view'); // Solo admins/gerentes
+    await requireRole('manager'); // Admins y gerentes
   } catch {
     redirect('/panel/dashboard');
   }

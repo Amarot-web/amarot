@@ -1,8 +1,16 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { requirePermission } from '@/lib/auth/permissions';
 import { fetchAllEmailTemplates } from '@/lib/crm/actions';
 import EmailTemplatesClient from './EmailTemplatesClient';
 
 export default async function PlantillasConfigPage() {
+  try {
+    await requirePermission('crm:edit');
+  } catch {
+    redirect('/panel/dashboard');
+  }
+
   const templates = await fetchAllEmailTemplates();
 
   return (

@@ -7,7 +7,7 @@ import AssignmentRulesClient from './AssignmentRulesClient';
 
 export default async function AsignacionPage() {
   try {
-    await requirePermission('quotations:view');
+    await requirePermission('crm:edit');
   } catch {
     redirect('/panel/dashboard');
   }

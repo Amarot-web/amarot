@@ -89,8 +89,8 @@ export async function updateNotificationEmails(
   emails: string[]
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireAuth();
-  if (user.role !== 'admin') {
-    return { success: false, error: 'Solo administradores pueden cambiar emails de notificación' };
+  if (user.role !== 'admin' && user.role !== 'manager') {
+    return { success: false, error: 'Solo administradores o gerentes pueden cambiar emails de notificación' };
   }
   const supabase = createAdminClient();
 
@@ -131,8 +131,8 @@ export async function updateWhatsAppNumber(
   phone: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireAuth();
-  if (user.role !== 'admin') {
-    return { success: false, error: 'Solo administradores pueden cambiar el número' };
+  if (user.role !== 'admin' && user.role !== 'manager') {
+    return { success: false, error: 'Solo administradores o gerentes pueden cambiar el número' };
   }
   const digits = (phone || '').replace(/\D/g, '');
   if (!/^9\d{8}$/.test(digits)) {
