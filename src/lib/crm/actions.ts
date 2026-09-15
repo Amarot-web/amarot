@@ -1301,11 +1301,13 @@ export async function searchMatchingClients(
  * @param leadId - ID del lead
  * @param action - 'create' para crear cliente, 'link' para vincular existente, 'none' para no vincular
  * @param clientId - ID del cliente existente (requerido si action === 'link')
+ * @param contactPhone - Teléfono para el cliente nuevo cuando el lead no tiene uno (clients.contact_phone es obligatorio)
  */
 export async function winLeadWithClient(
   leadId: string,
   action: 'create' | 'link' | 'none',
-  clientId?: string
+  clientId?: string,
+  contactPhone?: string
 ): Promise<{ success: boolean; clientId?: string; error?: string }> {
   const user = await getAuthUser();
   if (!user) {
@@ -1327,9 +1329,23 @@ export async function winLeadWithClient(
   }
 
   let finalClientId: string | null = null;
+  // Teléfono ingresado en el modal para completar un lead que no lo tenía
+  let phoneForLead: string | null = null;
 
   // Procesar según la acción
   if (action === 'create') {
+    // clients.contact_phone es NOT NULL: usar el teléfono del lead o el ingresado en el modal
+    const leadPhone = lead.phone?.trim() || '';
+    const phone = leadPhone || (typeof contactPhone === 'string' ? contactPhone.trim() : '');
+
+    if (!phone) {
+      return { success: false, error: 'El teléfono del contacto es obligatorio para crear el cliente' };
+    }
+
+    if (!leadPhone) {
+      phoneForLead = phone;
+    }
+
     // Crear nuevo cliente desde datos del lead
     const { data: newClient, error: clientError } = await supabase
       .from('clients')
@@ -1337,7 +1353,7 @@ export async function winLeadWithClient(
         company_name: lead.company,
         contact_name: lead.contact_name,
         contact_email: lead.email,
-        contact_phone: lead.phone,
+        contact_phone: phone,
         address: lead.location,
       })
       .select('id')
@@ -1369,11 +1385,11 @@ export async function winLeadWithClient(
   }
   // Si action === 'none', finalClientId queda null
 
-  // Actualizar el lead con el client_id
+  // Actualizar el lead con el client_id (y el teléfono si se ingresó en el modal)
   if (finalClientId) {
     const { error: updateError } = await supabase
       .from('leads')
-      .update({ client_id: finalClientId })
+      .update(phoneForLead ? { client_id: finalClientId, phone: phoneForLead } : { client_id: finalClientId })
       .eq('id', leadId);
 
     if (updateError) {

@@ -27,6 +27,10 @@ export default function WinLeadModal({
   const [matchingClients, setMatchingClients] = useState<ClientBasic[]>([]);
   const [allClients, setAllClients] = useState<ClientBasic[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+
+  // El cliente exige teléfono: si el lead no lo tiene, se pide al crear el cliente
+  const needsPhone = action === 'create' && !lead.phone?.trim();
 
   // Buscar clientes coincidentes al abrir el modal
   useEffect(() => {
@@ -61,9 +65,19 @@ export default function WinLeadModal({
       return;
     }
 
+    if (needsPhone && !contactPhone.trim()) {
+      toast.error('Ingresa el teléfono del contacto para crear el cliente');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const result = await winLeadWithClient(lead.id, action, selectedClientId || undefined);
+      const result = await winLeadWithClient(
+        lead.id,
+        action,
+        selectedClientId || undefined,
+        needsPhone ? contactPhone.trim() : undefined
+      );
 
       if (result.success) {
         const messages: Record<ActionType, string> = {
@@ -195,6 +209,26 @@ export default function WinLeadModal({
                   </div>
                 </label>
 
+                {/* Phone input (visible when 'create' is selected and the lead has no phone) */}
+                {needsPhone && (
+                  <div className="ml-6 space-y-1">
+                    <label htmlFor="winContactPhone" className="block text-sm font-medium text-gray-700">
+                      Teléfono del contacto *
+                    </label>
+                    <input
+                      type="tel"
+                      id="winContactPhone"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      placeholder="+51 999 999 999"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                    <p className="text-xs text-gray-500">
+                      El lead no tiene teléfono y es obligatorio para el cliente. También se guardará en el lead.
+                    </p>
+                  </div>
+                )}
+
                 {/* Option: Link to existing */}
                 <label
                   className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-all ${
@@ -315,7 +349,12 @@ export default function WinLeadModal({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || isLoading || (action === 'link' && !selectedClientId)}
+              disabled={
+                isSubmitting ||
+                isLoading ||
+                (action === 'link' && !selectedClientId) ||
+                (needsPhone && !contactPhone.trim())
+              }
               className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
