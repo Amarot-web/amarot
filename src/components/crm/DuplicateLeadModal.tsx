@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { mergeLeadWithExisting } from '@/lib/crm/actions';
 import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/crm/types';
 import type { Lead } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import { toast } from 'sonner';
 
 interface DuplicateLeadModalProps {
@@ -171,7 +172,7 @@ export default function DuplicateLeadModal({
                       <span>Creado: {formatDate(lead.createdAt)}</span>
                       {lead.expectedRevenue > 0 && (
                         <span className="font-medium text-green-600">
-                          S/ {lead.expectedRevenue.toLocaleString()}
+                          {formatAmount(lead.expectedRevenue)}
                         </span>
                       )}
                     </div>

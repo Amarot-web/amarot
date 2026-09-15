@@ -2,6 +2,7 @@
 
 import { MetricCard, PipelineChart, SourceChart, TrendChart, ServiceTypeDonutChart, ServiceTypeBarChart } from '@/components/crm/charts';
 import type { CRMMetrics, LeadsByPeriod, LeadsBySource, LeadsByService, PipelineStageSummary } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 
 interface MetricsDashboardProps {
   metrics: CRMMetrics;
@@ -226,7 +227,7 @@ export default function MetricsDashboard({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                    S/.{source.value.toLocaleString('es-PE')}
+                    {formatAmount(source.value)}
                   </td>
                 </tr>
               ))}

@@ -11,6 +11,7 @@ import {
   type LinkedDocument,
 } from '@/lib/crm/queries';
 import { SERVICE_TYPE_LABELS, LEAD_SOURCE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import LeadActions from '@/components/crm/LeadActions';
 import ActivityList from '@/components/crm/ActivityList';
 import NoteList from '@/components/crm/NoteList';
@@ -42,14 +43,6 @@ export default async function LeadDetailPage({ params }: PageProps) {
       quotationId: lead.quotationId,
     }),
   ]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const formatDate = (date: Date | null) => {
     if (!date) return '-';
@@ -168,7 +161,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
               <div>
                 <span className="text-sm text-gray-500">Valor Esperado</span>
                 <p className="font-medium text-green-600 text-lg">
-                  {formatCurrency(lead.expectedRevenue)}
+                  {formatAmount(lead.expectedRevenue)}
                 </p>
               </div>
               <div>

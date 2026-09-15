@@ -3,6 +3,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Lead, LeadStage } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import LeadCard from './LeadCard';
 
 interface KanbanColumnProps {
@@ -19,14 +20,6 @@ export default function KanbanColumn({ stage, leads, alertsMap }: KanbanColumnPr
       stage,
     },
   });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const totalRevenue = leads.reduce((sum, lead) => sum + (lead.expectedRevenue || 0), 0);
   const weightedRevenue = leads.reduce(
@@ -64,11 +57,11 @@ export default function KanbanColumn({ stage, leads, alertsMap }: KanbanColumnPr
         <div className="text-xs text-gray-500 space-y-0.5">
           <div className="flex justify-between">
             <span>Total:</span>
-            <span className="font-medium">{formatCurrency(totalRevenue)}</span>
+            <span className="font-medium">{formatAmount(totalRevenue)}</span>
           </div>
           <div className="flex justify-between">
             <span>Ponderado ({stage.probability}%):</span>
-            <span className="font-medium text-green-600">{formatCurrency(weightedRevenue)}</span>
+            <span className="font-medium text-green-600">{formatAmount(weightedRevenue)}</span>
           </div>
         </div>
       </div>

@@ -260,7 +260,7 @@ export default function ConvertMessageModal({
                 type="number"
                 name="expectedRevenue"
                 min="0"
-                step="100"
+                step="0.01"
                 defaultValue=""
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-transparent"

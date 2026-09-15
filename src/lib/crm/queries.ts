@@ -27,6 +27,7 @@ import type {
   ForecastColumn,
 } from './types';
 import { LEAD_SOURCE_LABELS, SERVICE_TYPE_LABELS } from './types';
+import { formatAmount } from './format';
 
 /**
  * Sanitiza input de búsqueda para prevenir inyección en queries
@@ -1913,18 +1914,11 @@ export async function getLinkedDocuments(lead: {
       approved: 'aprobada',
       rejected: 'rechazada',
     };
-    const formatCurrency = (amount: number) =>
-      new Intl.NumberFormat('es-PE', {
-        style: 'currency',
-        currency: 'PEN',
-        minimumFractionDigits: 0,
-      }).format(amount);
-
     documents.push({
       type: 'quotation',
       id: quot.id,
       label: quot.code,
-      sublabel: `${statusLabels[quot.status] || quot.status} • ${formatCurrency(Number(quot.total) || 0)}`,
+      sublabel: `${statusLabels[quot.status] || quot.status} • ${formatAmount(Number(quot.total) || 0)}`,
       href: `/panel/cotizador/${quot.id}`,
       status: quot.status,
     });

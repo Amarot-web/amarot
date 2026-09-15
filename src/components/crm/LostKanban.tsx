@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import type { Lead, LeadStage, AlertType } from '@/lib/crm/types';
 import { SERVICE_TYPE_LABELS, PRIORITY_CONFIG } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import AlertBadge from './AlertBadge';
 
 interface LostKanbanProps {
@@ -14,14 +15,6 @@ interface LostKanbanProps {
 
 // Card para leads perdidos (con ribbon PERDIDO)
 function LostLeadCard({ lead, alerts }: { lead: Lead; alerts?: AlertType[] }) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const formatDate = (date: Date | null) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('es-PE', {
@@ -90,7 +83,7 @@ function LostLeadCard({ lead, alerts }: { lead: Lead; alerts?: AlertType[] }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {formatCurrency(lead.expectedRevenue)}
+            {formatAmount(lead.expectedRevenue)}
           </div>
           {lead.dateClosed && (
             <span className="text-xs text-gray-400">{formatDate(lead.dateClosed)}</span>
@@ -151,14 +144,6 @@ export default function LostKanban({ stages, leadsByStage, alertsMap }: LostKanb
     [searchQuery]
   );
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   // Calcular estadísticas de columna
   const getColumnStats = (stageId: string) => {
     const leads = leadsByStage.get(stageId) || [];
@@ -195,7 +180,7 @@ export default function LostKanban({ stages, leadsByStage, alertsMap }: LostKanb
             <span className="font-semibold">{totalLostLeads} oportunidades perdidas</span>
           </div>
           <span className="text-gray-400">|</span>
-          <span className="text-gray-500 line-through">{formatCurrency(totalLostValue)}</span>
+          <span className="text-gray-500 line-through">{formatAmount(totalLostValue)}</span>
         </div>
       </div>
 
@@ -266,7 +251,7 @@ export default function LostKanban({ stages, leadsByStage, alertsMap }: LostKanb
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">Valor perdido</span>
                     <span className="font-medium text-gray-500 line-through">
-                      {formatCurrency(stats.totalValue)}
+                      {formatAmount(stats.totalValue)}
                     </span>
                   </div>
                 )}

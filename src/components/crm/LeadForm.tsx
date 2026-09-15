@@ -312,7 +312,7 @@ export default function LeadForm({ lead, stages, teamMembers }: LeadFormProps) {
               id="expectedRevenue"
               name="expectedRevenue"
               min="0"
-              step="100"
+              step="0.01"
               defaultValue={lead?.expectedRevenue || ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-transparent"
               placeholder="0"

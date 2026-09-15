@@ -16,6 +16,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import Link from 'next/link';
 import type { Lead, LeadStage } from '@/lib/crm/types';
 import { SERVICE_TYPE_LABELS } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import { changeLeadStage } from '@/lib/crm/actions';
 import KanbanColumn from './KanbanColumn';
 import LeadCard from './LeadCard';
@@ -299,14 +300,6 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
     );
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('es-PE', {
       day: '2-digit',
@@ -536,7 +529,7 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <span className="text-sm font-medium text-gray-900">
-                        {formatCurrency(lead.expectedRevenue)}
+                        {formatAmount(lead.expectedRevenue)}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -582,7 +575,7 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className="text-sm font-semibold text-gray-900">
-                      {formatCurrency(lead.expectedRevenue)}
+                      {formatAmount(lead.expectedRevenue)}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">{formatDate(lead.createdAt)}</div>
                   </div>
@@ -632,7 +625,7 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
                     {/* Valor total de la etapa */}
                     {totalValue > 0 && (
                       <span className="text-sm text-gray-500">
-                        ({formatCurrency(totalValue)})
+                        ({formatAmount(totalValue)})
                       </span>
                     )}
                   </div>
@@ -682,7 +675,7 @@ export default function KanbanBoard({ stages, leadsByStage: initialLeadsByStage,
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <div className="text-sm font-semibold text-gray-900">
-                                  {formatCurrency(lead.expectedRevenue)}
+                                  {formatAmount(lead.expectedRevenue)}
                                 </div>
                                 <div className="text-xs text-gray-500 mt-0.5">
                                   {formatDate(lead.createdAt)}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { Lead, LeadStage, PipelineStageSummary, ForecastColumn } from '@/lib/crm/types';
+import { formatAmount } from '@/lib/crm/format';
 import KanbanBoard from '@/components/crm/KanbanBoard';
 import ForecastKanban from '@/components/crm/ForecastKanban';
 import LostKanban from '@/components/crm/LostKanban';
@@ -44,14 +45,6 @@ export default function PipelineClient({
   const wonRevenue = summary
     .filter((s) => s.isWon)
     .reduce((sum, s) => sum + s.totalRevenue, 0);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <div className="max-w-full">
@@ -142,19 +135,19 @@ export default function PipelineClient({
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm font-medium text-gray-500">Valor Total</div>
           <div className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-            {formatCurrency(totalRevenue)}
+            {formatAmount(totalRevenue)}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm font-medium text-gray-500">Valor Ponderado</div>
           <div className="mt-1 text-2xl font-bold text-amber-600">
-            {formatCurrency(weightedRevenue)}
+            {formatAmount(weightedRevenue)}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm font-medium text-gray-500">Ganados (Mes)</div>
           <div className="mt-1 text-2xl font-bold text-green-600">
-            {formatCurrency(wonRevenue)}
+            {formatAmount(wonRevenue)}
           </div>
         </div>
       </div>
